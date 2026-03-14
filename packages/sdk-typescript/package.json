@@ -1,0 +1,21 @@
+{
+  "name": "@tracevault/sdk-typescript",
+  "version": "0.1.0",
+  "private": false,
+  "description": "TypeScript SDK for ingesting events into TraceVault AI",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@tracevault/event-schema": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  }
+}

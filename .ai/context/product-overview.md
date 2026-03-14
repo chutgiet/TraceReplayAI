@@ -1,0 +1,63 @@
+# TraceVault AI — Product Overview
+
+## What is TraceVault AI?
+
+TraceVault AI is an audit-grade replay and lineage platform for enterprise AI agents. It captures the full execution lifecycle of AI agent runs — prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects — and reconstructs them into replayable execution graphs.
+
+## Target users
+
+| Persona | Need |
+|---|---|
+| **AI/ML Engineers** | Debug agent behavior, understand failures, improve reliability |
+| **Platform Engineers** | Monitor agent fleet health, enforce standards, manage integrations |
+| **Security/Compliance Teams** | Audit agent actions, investigate incidents, produce evidence |
+| **Product Managers** | Understand what agents actually do, validate behavior against intent |
+| **Risk/Legal** | Demonstrate AI governance, regulatory compliance, accountability |
+
+## Core use cases
+
+1. **Execution replay** — Step through exactly what an AI agent did, in causal order
+2. **Root cause investigation** — Find where and why an agent failed or produced unexpected output
+3. **Compliance audit** — Generate evidence bundles for security reviews and regulatory inquiries
+4. **Drift detection** — Compare current behavior against previous runs or baselines
+5. **Lineage tracing** — Map the chain of data, decisions, and side effects across systems
+6. **Operational monitoring** — Track agent health, error rates, latency, and cost
+
+## Non-goals
+
+- We are NOT building a generic logging/observability platform (use Datadog, Grafana for that)
+- We are NOT building an agent framework (use LangChain, CrewAI, AutoGen for that)
+- We are NOT building a prompt management tool (use PromptLayer, Humanloop for that)
+- We are NOT replacing APM (use New Relic, Dynatrace for that)
+
+We are building the **forensic investigation and audit layer** for AI agent operations.
+
+## Current MVP scope
+
+### In scope (v0.1)
+- Canonical event schema for agent runs
+- TypeScript SDK for event ingestion
+- REST API for event ingestion
+- Event normalization pipeline
+- Basic replay engine (timeline reconstruction)
+- Simple lineage graph (run → events → side effects)
+- Web UI: run list, replay viewer, event detail
+- Field-level redaction support
+- Fixture-based test suite
+
+### Out of scope (future)
+- Multi-tenant access control
+- Policy engine / rule evaluation
+- Evidence bundle export (PDF, JSON, SIEM)
+- Framework-specific adapters (LangChain, OpenAI Agents, etc.)
+- Real-time streaming replay
+- Connector marketplace
+- Run diffing / comparison
+- Cost tracking and attribution
+
+## Success metrics
+
+- An engineer can replay any agent run within 30 seconds of it completing
+- A compliance analyst can generate an evidence bundle for any run
+- The system handles partial/messy telemetry gracefully — no crashes, no fabricated data
+- Event ingestion is idempotent and handles duplicates/out-of-order delivery

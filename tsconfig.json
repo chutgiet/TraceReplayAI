@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {},
+  "references": [
+    { "path": "packages/event-schema" },
+    { "path": "packages/common" },
+    { "path": "packages/replay-engine" },
+    { "path": "services/ingest-api" },
+    { "path": "services/worker" },
+    { "path": "services/query-service" }
+  ]
+}

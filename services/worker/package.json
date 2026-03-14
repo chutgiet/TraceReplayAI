@@ -1,0 +1,25 @@
+{
+  "name": "@tracevault/worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Async job worker for TraceVault AI (normalization, indexing, etc.)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@tracevault/event-schema": "workspace:*",
+    "@tracevault/common": "workspace:*",
+    "bullmq": "^5.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  }
+}
