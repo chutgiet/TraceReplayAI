@@ -5,10 +5,10 @@
 ### Ingestion & Schema
 - [x] Canonical event schema package with full type definitions
 - [x] Zod runtime validators for all event types
-- [ ] Ingest API with schema validation and persistence
-- [ ] Idempotent ingestion (dedup by event ID)
+- [x] Ingest API with schema validation and persistence
+- [x] Idempotent ingestion (dedup by event ID)
 - [ ] Out-of-order event handling strategy
-- [ ] Batch ingestion endpoint
+- [x] Batch ingestion endpoint
 
 ### Replay & Lineage
 - [ ] Basic replay engine: ordered timeline from events
