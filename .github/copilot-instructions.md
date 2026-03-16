@@ -1,10 +1,10 @@
-# TraceVault AI — Copilot Instructions
+# TraceReplay AI — Copilot Instructions
 
 > This file is automatically loaded by GitHub Copilot as workspace-level context.
 
 ## Project overview
 
-TraceVault AI is an audit-grade replay and lineage platform for enterprise AI agents. It captures prompts, context, tool calls, approvals, outputs, errors, and side effects, then reconstructs them into replayable execution graphs.
+TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI agents. It captures prompts, context, tool calls, approvals, outputs, errors, and side effects, then reconstructs them into replayable execution graphs.
 
 ## Architecture
 

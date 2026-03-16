@@ -1,6 +1,6 @@
-# TraceVault AI — Architecture Prompt
+# TraceReplay AI — Architecture Prompt
 
-You are working on the architecture of TraceVault AI.
+You are working on the architecture of TraceReplay AI.
 
 Focus on:
 - service boundaries

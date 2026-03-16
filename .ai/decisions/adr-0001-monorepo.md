@@ -4,7 +4,7 @@
 **Accepted** — March 2026
 
 ## Context
-TraceVault AI requires multiple packages (event schema, replay engine, SDK, UI components) and multiple services (ingest API, normalizer, query service, etc.). We need to decide how to organize the codebase.
+TraceReplay AI requires multiple packages (event schema, replay engine, SDK, UI components) and multiple services (ingest API, normalizer, query service, etc.). We need to decide how to organize the codebase.
 
 Options considered:
 1. **Monorepo** — all packages and services in one repository

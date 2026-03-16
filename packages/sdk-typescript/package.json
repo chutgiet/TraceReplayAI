@@ -1,8 +1,8 @@
 {
-  "name": "@tracevault/sdk-typescript",
+  "name": "@tracereplay/sdk-typescript",
   "version": "0.1.0",
   "private": false,
-  "description": "TypeScript SDK for ingesting events into TraceVault AI",
+  "description": "TypeScript SDK for ingesting events into TraceReplay AI",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +12,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@tracevault/event-schema": "workspace:*"
+    "@tracereplay/event-schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

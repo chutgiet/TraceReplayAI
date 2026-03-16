@@ -1,6 +1,6 @@
-# TraceVault AI — Frontend Prompt
+# TraceReplay AI — Frontend Prompt
 
-You are implementing frontend code for TraceVault AI.
+You are implementing frontend code for TraceReplay AI.
 
 Priorities:
 - investigation clarity

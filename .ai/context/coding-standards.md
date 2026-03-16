@@ -1,4 +1,4 @@
-# TraceVault AI — Coding Standards
+# TraceReplay AI — Coding Standards
 
 ## Language and runtime
 
@@ -33,7 +33,7 @@ kebab-case    → file names, folder names, package names
 ```
 
 ### Imports
-- Absolute imports via package aliases (`@tracevault/event-schema`)
+- Absolute imports via package aliases (`@tracereplay/event-schema`)
 - Group imports: external → internal packages → local
 - No barrel re-exports from large packages (causes circular deps)
 

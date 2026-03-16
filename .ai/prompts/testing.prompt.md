@@ -1,6 +1,6 @@
-# TraceVault AI — Testing Prompt
+# TraceReplay AI — Testing Prompt
 
-You are responsible for testing TraceVault AI features.
+You are responsible for testing TraceReplay AI features.
 
 Focus on:
 - replay correctness

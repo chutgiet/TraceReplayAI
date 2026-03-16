@@ -1,4 +1,4 @@
-# TraceVault AI — Canonical Event Model
+# TraceReplay AI — Canonical Event Model
 
 ## Overview
 

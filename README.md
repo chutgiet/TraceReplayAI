@@ -1,8 +1,8 @@
-# TraceVault AI
+# TraceReplay AI
 
 > Audit-grade replay and lineage platform for enterprise AI agents.
 
-TraceVault AI captures prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects from AI agent runs, then reconstructs them into replayable execution graphs for debugging, compliance, incident investigation, and operational trust.
+TraceReplay AI captures prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects from AI agent runs, then reconstructs them into replayable execution graphs for debugging, compliance, incident investigation, and operational trust.
 
 ---
 
@@ -18,7 +18,7 @@ TraceVault AI captures prompts, retrieved context, tool calls, approvals, output
 
 ```bash
 # Clone the repository
-git clone <repo-url> && cd tracevault-ai
+git clone <repo-url> && cd tracereplay-ai
 
 # Install dependencies
 pnpm install

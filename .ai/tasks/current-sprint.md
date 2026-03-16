@@ -1,4 +1,4 @@
-# TraceVault AI — Current Sprint
+# TraceReplay AI — Current Sprint
 
 ## Sprint: Foundation-1
 **Goal:** Establish core event schema, basic ingestion, and replay engine

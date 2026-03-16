@@ -1,8 +1,8 @@
 {
-  "name": "@tracevault/common",
+  "name": "@tracereplay/common",
   "version": "0.1.0",
   "private": true,
-  "description": "Shared utilities, types, and constants for TraceVault AI",
+  "description": "Shared utilities, types, and constants for TraceReplay AI",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +12,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@tracevault/event-schema": "workspace:*"
+    "@tracereplay/event-schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.4.0",
