@@ -9,6 +9,9 @@ services:
       POSTGRES_DB: tracereplay
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # SQL files here are run once on first container init (empty data volume).
+      # For ongoing migrations use: pnpm db:migrate
+      - ./infrastructure/db/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U tracereplay"]
       interval: 5s

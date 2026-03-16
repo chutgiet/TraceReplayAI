@@ -11,7 +11,7 @@
 |----|------|--------|-------|
 | F1-001 | Define canonical event types in `packages/event-schema` | ✅ Done | — |
 | F1-002 | Create Zod validators for all event types | ✅ Done | — |
-| F1-003 | Set up PostgreSQL schema (events, runs tables) | Not started | — |
+| F1-003 | Set up PostgreSQL schema (events, runs tables) | ✅ Done | — |
 | F1-004 | Implement `ingest-api` POST /v1/events endpoint | Not started | — |
 | F1-005 | Implement basic `replay-engine` timeline construction | Not started | — |
 | F1-006 | Create test fixtures (5 canonical event sequences) | Not started | — |
@@ -43,3 +43,4 @@
 | Date | Task | Notes |
 |------|------|-------|
 | 2026-03-15 | F1-001, F1-002, F1-007 | 21 event types, Zod validators, branded IDs, 68 unit tests, 100% runtime coverage |
+| 2026-03-16 | F1-003 | `runs` + `events` tables, `schema_migrations` tracking, pg Pool in `packages/common`, migration runner script, docker-compose init mount |

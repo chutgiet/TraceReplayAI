@@ -12,9 +12,12 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@tracereplay/event-schema": "workspace:*"
+    "@tracereplay/event-schema": "workspace:*",
+    "pg": "^8.12.0"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"
   }
