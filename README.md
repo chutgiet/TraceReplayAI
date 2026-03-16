@@ -1,8 +1,8 @@
 # TraceReplay AI
 
-> Audit-grade replay and lineage platform for enterprise AI agents.
+> Audit-grade replay and lineage platform for enterprise AI agents using OpenTelemetry, Python, local Ollama models, and TypeScript.
 
-TraceReplay AI captures prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects from AI agent runs, then reconstructs them into replayable execution graphs for debugging, compliance, incident investigation, and operational trust.
+TraceReplay AI captures prompts, context, tool calls, approvals, and downstream side effects from AI agent runs — then reconstructs them into replayable execution graphs for debugging, compliance, and incident investigation.
 
 ---
 
@@ -18,7 +18,7 @@ TraceReplay AI captures prompts, retrieved context, tool calls, approvals, outpu
 
 ```bash
 # Clone the repository
-git clone <repo-url> && cd tracereplay-ai
+git clone https://github.com/chutgiet/TraceReplayAI.git && cd TraceReplayAI
 
 # Install dependencies
 pnpm install
@@ -86,11 +86,47 @@ pnpm typecheck
 ## Architecture
 
 ```
-SDK → Ingest API → Queue → Normalizer → Event Store
-                                            ↓
-                              Replay Engine / Lineage Graph
-                                            ↓
-                                      Query Service → Web UI
+┌─────────────────────────────────────────────────────┐
+│                    SDK / Adapters                   │
+│  TypeScript SDK · Python SDK · OTel Exporter        │
+│  OpenAI · Anthropic · Ollama models.                │
+└──────────────────────┬──────────────────────────────┘
+                       │ HTTP / gRPC
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│                    Ingest API                       │
+│  Validates, deduplicates, queues raw events         │
+└──────────────────────┬──────────────────────────────┘
+                       │ Message Queue (BullMQ + Redis)
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│                    Normalizer                       │
+│  Maps vendor telemetry → canonical event model      │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│                  Event Store                        │
+│  Append-only canonical events + metadata            │
+└──────┬──────────┬──────────┬────────────────────────┘
+       │          │          │
+       ▼          ▼          ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐
+│  Replay  │ │ Lineage  │ │ Evidence │
+│  Engine  │ │  Graph   │ │ Service  │
+└──────────┘ └──────────┘ └──────────┘
+       │          │          │
+       ▼          ▼          ▼
+┌─────────────────────────────────────────────────────┐
+│                  Query Service                      │
+│  Investigation API, search, filtering               │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│                    Web UI                           │
+│  Replay viewer, investigation, admin                │
+└─────────────────────────────────────────────────────┘
 ```
 
 See [.ai/context/architecture-overview.md](.ai/context/architecture-overview.md) for the full architecture documentation.
@@ -117,6 +153,7 @@ See [.ai/context/architecture-overview.md](.ai/context/architecture-overview.md)
 - **Next.js + React + Tailwind** — Frontend
 - **PostgreSQL** — Append-only event store
 - **BullMQ + Redis** — Async job queue
+- **Ollama** — Local model inference (self-hosted LLMs)
 - **pnpm + Turborepo** — Monorepo tooling
 - **Vitest** — Testing
 - **Zod** — Runtime schema validation
