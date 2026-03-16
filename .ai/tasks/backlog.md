@@ -3,8 +3,8 @@
 ## Priority: High
 
 ### Ingestion & Schema
-- [ ] Canonical event schema package with full type definitions
-- [ ] Zod runtime validators for all event types
+- [x] Canonical event schema package with full type definitions
+- [x] Zod runtime validators for all event types
 - [ ] Ingest API with schema validation and persistence
 - [ ] Idempotent ingestion (dedup by event ID)
 - [ ] Out-of-order event handling strategy
