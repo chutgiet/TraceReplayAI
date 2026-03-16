@@ -1,8 +1,8 @@
 {
-  "name": "@tracevault/event-schema",
+  "name": "@tracereplay/event-schema",
   "version": "0.1.0",
   "private": false,
-  "description": "Canonical event types and validators for TraceVault AI",
+  "description": "Canonical event types and validators for TraceReplay AI",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

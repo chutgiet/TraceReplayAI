@@ -4,7 +4,7 @@
 **Accepted** — March 2026
 
 ## Context
-AI agent frameworks (LangChain, OpenAI Agents SDK, CrewAI, AutoGen, custom) each produce telemetry in different formats. TraceVault AI needs a stable internal representation for replay, lineage, and evidence generation.
+AI agent frameworks (LangChain, OpenAI Agents SDK, CrewAI, AutoGen, custom) each produce telemetry in different formats. TraceReplay AI needs a stable internal representation for replay, lineage, and evidence generation.
 
 Options considered:
 1. **Store raw telemetry as-is** — flexible but impossible to build reliable replay

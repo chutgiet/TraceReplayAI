@@ -1,6 +1,6 @@
-# TraceVault AI — Backend Prompt
+# TraceReplay AI — Backend Prompt
 
-You are implementing backend code for TraceVault AI.
+You are implementing backend code for TraceReplay AI.
 
 Priorities:
 - schema validation at every boundary

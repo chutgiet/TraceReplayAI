@@ -1,8 +1,8 @@
 {
-  "name": "@tracevault/worker",
+  "name": "@tracereplay/worker",
   "version": "0.1.0",
   "private": true,
-  "description": "Async job worker for TraceVault AI (normalization, indexing, etc.)",
+  "description": "Async job worker for TraceReplay AI (normalization, indexing, etc.)",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -13,8 +13,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@tracevault/event-schema": "workspace:*",
-    "@tracevault/common": "workspace:*",
+    "@tracereplay/event-schema": "workspace:*",
+    "@tracereplay/common": "workspace:*",
     "bullmq": "^5.0.0"
   },
   "devDependencies": {

@@ -1,8 +1,8 @@
-# TraceVault AI — Security Prompt
+# TraceReplay AI — Security Prompt
 
-You are reviewing or implementing security-sensitive code for TraceVault AI.
+You are reviewing or implementing security-sensitive code for TraceReplay AI.
 
-TraceVault AI handles sensitive execution telemetry from AI agents, including prompts, tool calls, retrieved documents, approval decisions, and downstream side effects. Security and privacy are foundational — not bolt-on features.
+TraceReplay AI handles sensitive execution telemetry from AI agents, including prompts, tool calls, retrieved documents, approval decisions, and downstream side effects. Security and privacy are foundational — not bolt-on features.
 
 ---
 

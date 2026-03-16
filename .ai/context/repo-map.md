@@ -1,9 +1,9 @@
-# TraceVault AI — Repository Map
+# TraceReplay AI — Repository Map
 
 ## Top-level structure
 
 ```
-tracevault-ai/
+tracereplay-ai/
 ├── .ai/              — AI agent prompts, context, tasks, decisions
 ├── .github/          — GitHub config, CI/CD, Copilot instructions
 ├── apps/             — Deployable frontend applications

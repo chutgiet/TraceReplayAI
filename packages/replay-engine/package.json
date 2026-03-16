@@ -1,5 +1,5 @@
 {
-  "name": "@tracevault/replay-engine",
+  "name": "@tracereplay/replay-engine",
   "version": "0.1.0",
   "private": true,
   "description": "Replay engine for constructing execution timelines from canonical events",
@@ -12,8 +12,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@tracevault/event-schema": "workspace:*",
-    "@tracevault/common": "workspace:*"
+    "@tracereplay/event-schema": "workspace:*",
+    "@tracereplay/common": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

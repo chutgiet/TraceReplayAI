@@ -1,8 +1,8 @@
 {
-  "name": "@tracevault/query-service",
+  "name": "@tracereplay/query-service",
   "version": "0.1.0",
   "private": true,
-  "description": "Investigation and query API service for TraceVault AI",
+  "description": "Investigation and query API service for TraceReplay AI",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -13,8 +13,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@tracevault/event-schema": "workspace:*",
-    "@tracevault/common": "workspace:*",
+    "@tracereplay/event-schema": "workspace:*",
+    "@tracereplay/common": "workspace:*",
     "fastify": "^5.0.0",
     "zod": "^3.23.0"
   },

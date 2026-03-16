@@ -1,8 +1,8 @@
-# TraceVault AI — Product Overview
+# TraceReplay AI — Product Overview
 
-## What is TraceVault AI?
+## What is TraceReplay AI?
 
-TraceVault AI is an audit-grade replay and lineage platform for enterprise AI agents. It captures the full execution lifecycle of AI agent runs — prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects — and reconstructs them into replayable execution graphs.
+TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI agents. It captures the full execution lifecycle of AI agent runs — prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects — and reconstructs them into replayable execution graphs.
 
 ## Target users
 

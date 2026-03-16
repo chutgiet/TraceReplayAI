@@ -4,13 +4,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: tracevault
-      POSTGRES_PASSWORD: tracevault
-      POSTGRES_DB: tracevault
+      POSTGRES_USER: tracereplay
+      POSTGRES_PASSWORD: tracereplay
+      POSTGRES_DB: tracereplay
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tracevault"]
+      test: ["CMD-SHELL", "pg_isready -U tracereplay"]
       interval: 5s
       timeout: 5s
       retries: 5

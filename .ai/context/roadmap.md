@@ -1,4 +1,4 @@
-# TraceVault AI — Roadmap
+# TraceReplay AI — Roadmap
 
 ## Milestone 1: Foundation (Current)
 > Goal: Establish canonical event model, basic ingestion, and replay

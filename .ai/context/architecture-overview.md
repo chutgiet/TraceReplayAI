@@ -1,8 +1,8 @@
-# TraceVault AI — Architecture Overview
+# TraceReplay AI — Architecture Overview
 
 ## System architecture
 
-TraceVault AI follows a modular monorepo architecture with clear service boundaries, shared packages, and a unidirectional event flow.
+TraceReplay AI follows a modular monorepo architecture with clear service boundaries, shared packages, and a unidirectional event flow.
 
 ```
 ┌─────────────────────────────────────────────────────┐

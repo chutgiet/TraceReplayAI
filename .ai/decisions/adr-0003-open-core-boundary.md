@@ -4,7 +4,7 @@
 **Accepted** — March 2026
 
 ## Context
-TraceVault AI may eventually be partially open-sourced to drive developer adoption (SDKs, schemas, adapters) while keeping core enterprise features proprietary.
+TraceReplay AI may eventually be partially open-sourced to drive developer adoption (SDKs, schemas, adapters) while keeping core enterprise features proprietary.
 
 We need to establish clear boundaries now so the codebase doesn't accidentally couple public and proprietary code.
 
