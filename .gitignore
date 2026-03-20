@@ -8,6 +8,14 @@ dist/
 out/
 .turbo/
 
+# TypeScript build artifacts (outside dist/)
+*.d.ts
+*.d.ts.map
+*.js.map
+# Compiled JS from TS source (scripts/, tests/)
+scripts/*.js
+tests/**/*.js
+
 # Environment
 .env
 .env.local

@@ -1,0 +1,19 @@
+{
+  "name": "@tracereplay/tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cross-cutting tests and fixtures for TraceReplay AI",
+  "scripts": {
+    "test": "vitest run",
+    "build": "echo 'no build step for tests'"
+  },
+  "dependencies": {
+    "@tracereplay/event-schema": "workspace:*",
+    "@tracereplay/replay-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  }
+}

@@ -1,0 +1,147 @@
+[
+  {
+    "id": "a0000003-0000-4000-8000-000000000001",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "run.start",
+    "timestamp": "2026-03-15T12:00:00.000Z",
+    "sequence": 1,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "sourceFramework": "openai-agents",
+    "payload": {
+      "runName": "customer-data-sync",
+      "triggerSource": "schedule"
+    },
+    "tags": ["fixture", "error"],
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000002",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "prompt.input",
+    "timestamp": "2026-03-15T12:00:00.500Z",
+    "sequence": 2,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "role": "system",
+      "content": "Synchronize customer records from CRM to data warehouse",
+      "tokenCount": 10
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000003",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "model.request",
+    "timestamp": "2026-03-15T12:00:01.000Z",
+    "sequence": 3,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "modelProvider": "anthropic",
+      "modelId": "claude-3-opus",
+      "inputTokens": 156,
+      "temperature": 0
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000004",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "model.response",
+    "timestamp": "2026-03-15T12:00:02.500Z",
+    "sequence": 4,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "modelProvider": "anthropic",
+      "modelId": "claude-3-opus",
+      "outputTokens": 45,
+      "latencyMs": 1500
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000005",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "tool.call.start",
+    "timestamp": "2026-03-15T12:00:03.000Z",
+    "sequence": 5,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "toolName": "db-query",
+      "toolId": "tool-db-001",
+      "inputParameters": {
+        "query": "SELECT * FROM customers WHERE updated_at > NOW() - INTERVAL '1 day'",
+        "database": "crm-primary"
+      }
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000006",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "tool.call.error",
+    "timestamp": "2026-03-15T12:00:05.000Z",
+    "sequence": 6,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "toolName": "db-query",
+      "toolId": "tool-db-001",
+      "errorType": "ConnectionError",
+      "errorMessage": "FATAL: too many connections for role \"sync_user\" (max 50)"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000007",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "run.error",
+    "timestamp": "2026-03-15T12:00:05.100Z",
+    "sequence": 7,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "errorType": "ToolDependencyFailure",
+      "errorMessage": "Critical tool 'db-query' failed — cannot proceed with data sync",
+      "stackTrace": "ToolDependencyFailure: Critical tool 'db-query' failed\n  at DataSyncPipeline.execute (pipeline.ts:142)\n  at AgentRunner.run (runner.ts:58)",
+      "fatal": true
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000008",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "side_effect.failed",
+    "timestamp": "2026-03-15T12:00:05.500Z",
+    "sequence": 8,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "effectType": "email",
+      "targetSystem": "notification-service",
+      "description": "Send failure alert to ops team",
+      "errorType": "SmtpConnectionError",
+      "errorMessage": "Connection to smtp.internal:587 timed out after 5000ms"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000003-0000-4000-8000-000000000009",
+    "runId": "b0000003-0000-4000-8000-000000000001",
+    "type": "run.end",
+    "timestamp": "2026-03-15T12:00:06.000Z",
+    "sequence": 9,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "data-agent",
+    "payload": {
+      "status": "failure",
+      "durationMs": 6000,
+      "summary": "Data sync failed: database connection limit exceeded"
+    },
+    "schemaVersion": "1.0.0"
+  }
+]

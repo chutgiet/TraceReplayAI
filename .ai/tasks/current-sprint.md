@@ -14,7 +14,7 @@
 | F1-003 | Set up PostgreSQL schema (events, runs tables) | ✅ Done | — |
 | F1-004 | Implement `ingest-api` POST /v1/events endpoint | ✅ Done | — |
 | F1-005 | Implement basic `replay-engine` timeline construction | ✅ Done | — |
-| F1-006 | Create test fixtures (5 canonical event sequences) | Not started | — |
+| F1-006 | Create test fixtures (5 canonical event sequences) | ✅ Done | — |
 | F1-007 | Unit tests for event-schema validators | ✅ Done | — |
 | F1-008 | Integration test: ingest → persist → replay | Not started | — |
 
@@ -26,7 +26,7 @@
 - [x] Zod schemas validate all event types correctly
 - [x] Events can be ingested via REST API and persisted to PostgreSQL
 - [x] Replay engine produces a correct timeline from a set of ordered events
-- [ ] Test fixtures cover: simple run, multi-tool run, partial telemetry, error run
+- [x] Test fixtures cover: simple run, multi-tool run, partial telemetry, error run
 - [x] > 80% test coverage on event-schema package (100% on all runtime files, 68 tests passing)
 
 ---
@@ -46,3 +46,4 @@
 | 2026-03-16 | F1-003 | `runs` + `events` tables, `schema_migrations` tracking, pg Pool in `packages/common`, migration runner script, docker-compose init mount |
 | 2026-03-16 | F1-004 | Fastify ingest-api: POST /v1/events + /v1/events/batch, Zod validation, idempotent dedup, auto-run creation, 15 unit tests passing |
 | 2026-03-19 | F1-005 | replay-engine: buildTimeline() with chronological sorting, causal depth, parent-child linking, gap detection, paired durations, run summary. 25 unit tests passing |
+| 2026-03-19 | F1-006 | 5 canonical fixture sequences (simple-chat, multi-tool, error, partial-telemetry, approval-denied), fixture loader with Zod validation, 67 fixture tests passing |

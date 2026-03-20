@@ -1,0 +1,192 @@
+[
+  {
+    "id": "a0000005-0000-4000-8000-000000000001",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "run.start",
+    "timestamp": "2026-03-15T14:00:00.000Z",
+    "sequence": 1,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "sourceFramework": "custom",
+    "payload": {
+      "runName": "delete-inactive-users",
+      "triggerSource": "user",
+      "configuration": { "dryRun": false, "inactiveDays": 365 }
+    },
+    "tags": ["fixture", "approval", "destructive"],
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000002",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "prompt.input",
+    "timestamp": "2026-03-15T14:00:00.500Z",
+    "sequence": 2,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "role": "user",
+      "content": "Delete all user accounts inactive for more than 365 days",
+      "tokenCount": 14
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000003",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "model.request",
+    "timestamp": "2026-03-15T14:00:01.000Z",
+    "sequence": 3,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "inputTokens": 210,
+      "temperature": 0
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000004",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "model.response",
+    "timestamp": "2026-03-15T14:00:02.500Z",
+    "sequence": 4,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "outputTokens": 65,
+      "latencyMs": 1500
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000005",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "prompt.output",
+    "timestamp": "2026-03-15T14:00:02.600Z",
+    "sequence": 5,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "content": "I need to delete 847 inactive user accounts. This is a destructive operation that requires human approval.",
+      "tokenCount": 65,
+      "finishReason": "stop"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000006",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "approval.requested",
+    "timestamp": "2026-03-15T14:00:03.000Z",
+    "sequence": 6,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "approvalType": "human",
+      "requestedAction": "Delete 847 user accounts inactive > 365 days",
+      "requestedBy": "admin-agent",
+      "context": { "affectedCount": 847, "operation": "bulk_delete", "targetTable": "users" }
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000007",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "approval.denied",
+    "timestamp": "2026-03-15T14:05:30.000Z",
+    "sequence": 7,
+    "parentEventId": "a0000005-0000-4000-8000-000000000006",
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "approvalType": "human",
+      "decidedBy": "admin@company.com",
+      "reason": "Bulk deletion too risky without prior backup verification. Need to confirm backup completed successfully before proceeding.",
+      "durationMs": 330000
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000008",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "policy.evaluated",
+    "timestamp": "2026-03-15T14:05:30.500Z",
+    "sequence": 8,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "policyId": "pol-destructive-ops",
+      "policyName": "Destructive Operations Gate",
+      "result": "pass",
+      "details": "Human approval was requested before destructive operation — gate enforced correctly"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000009",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "policy.violated",
+    "timestamp": "2026-03-15T14:05:31.000Z",
+    "sequence": 9,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "policyId": "pol-backup-verification",
+      "policyName": "Pre-Deletion Backup Verification",
+      "result": "fail",
+      "details": "No backup verification step was executed before requesting deletion approval"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000010",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "annotation",
+    "timestamp": "2026-03-15T14:05:31.500Z",
+    "sequence": 10,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "key": "risk_level",
+      "value": "high",
+      "annotatedBy": "risk-assessor"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000011",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "custom",
+    "timestamp": "2026-03-15T14:05:32.000Z",
+    "sequence": 11,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "customType": "audit_trail",
+      "action": "operation_cancelled",
+      "reason": "Human approval denied",
+      "reviewer": "admin@company.com"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000005-0000-4000-8000-000000000012",
+    "runId": "b0000005-0000-4000-8000-000000000001",
+    "type": "run.end",
+    "timestamp": "2026-03-15T14:05:33.000Z",
+    "sequence": 12,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "admin-agent",
+    "payload": {
+      "status": "cancelled",
+      "durationMs": 333000,
+      "summary": "Bulk user deletion cancelled — human approval denied pending backup verification"
+    },
+    "schemaVersion": "1.0.0"
+  }
+]

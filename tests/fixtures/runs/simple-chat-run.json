@@ -1,0 +1,97 @@
+[
+  {
+    "id": "a0000001-0000-4000-8000-000000000001",
+    "runId": "b0000001-0000-4000-8000-000000000001",
+    "type": "run.start",
+    "timestamp": "2026-03-15T10:00:00.000Z",
+    "sequence": 1,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "chat-agent",
+    "sourceFramework": "custom",
+    "payload": {
+      "runName": "simple-chat",
+      "triggerSource": "user"
+    },
+    "tags": ["fixture", "simple"],
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000001-0000-4000-8000-000000000002",
+    "runId": "b0000001-0000-4000-8000-000000000001",
+    "type": "prompt.input",
+    "timestamp": "2026-03-15T10:00:01.000Z",
+    "sequence": 2,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "chat-agent",
+    "payload": {
+      "role": "user",
+      "content": "What is the capital of France?",
+      "tokenCount": 8
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000001-0000-4000-8000-000000000003",
+    "runId": "b0000001-0000-4000-8000-000000000001",
+    "type": "model.request",
+    "timestamp": "2026-03-15T10:00:01.100Z",
+    "sequence": 3,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "chat-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "inputTokens": 24,
+      "temperature": 0.3
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000001-0000-4000-8000-000000000004",
+    "runId": "b0000001-0000-4000-8000-000000000001",
+    "type": "model.response",
+    "timestamp": "2026-03-15T10:00:02.200Z",
+    "sequence": 4,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "chat-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "outputTokens": 12,
+      "latencyMs": 1100,
+      "cost": 0.0024
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000001-0000-4000-8000-000000000005",
+    "runId": "b0000001-0000-4000-8000-000000000001",
+    "type": "prompt.output",
+    "timestamp": "2026-03-15T10:00:02.300Z",
+    "sequence": 5,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "chat-agent",
+    "payload": {
+      "content": "The capital of France is Paris.",
+      "tokenCount": 12,
+      "finishReason": "stop",
+      "modelId": "gpt-4"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000001-0000-4000-8000-000000000006",
+    "runId": "b0000001-0000-4000-8000-000000000001",
+    "type": "run.end",
+    "timestamp": "2026-03-15T10:00:02.500Z",
+    "sequence": 6,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "chat-agent",
+    "payload": {
+      "status": "success",
+      "durationMs": 2500,
+      "summary": "Answered geography question"
+    },
+    "schemaVersion": "1.0.0"
+  }
+]
