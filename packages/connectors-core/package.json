@@ -1,0 +1,23 @@
+{
+  "name": "@tracereplay/connectors-core",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Base types and utilities for TraceReplay AI vendor connectors",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@tracereplay/event-schema": "workspace:*",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  }
+}

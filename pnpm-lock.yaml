@@ -52,6 +52,25 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@22.19.15)
 
+  packages/connectors-core:
+    dependencies:
+      '@tracereplay/event-schema':
+        specifier: workspace:*
+        version: link:../event-schema
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@25.5.0)
+
   packages/event-schema:
     dependencies:
       zod:
@@ -124,6 +143,37 @@ importers:
       '@types/pg':
         specifier: ^8.11.0
         version: 8.18.0
+      tsx:
+        specifier: ^4.0.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@25.5.0)
+
+  services/normalizer:
+    dependencies:
+      '@tracereplay/common':
+        specifier: workspace:*
+        version: link:../../packages/common
+      '@tracereplay/connectors-core':
+        specifier: workspace:*
+        version: link:../../packages/connectors-core
+      '@tracereplay/event-schema':
+        specifier: workspace:*
+        version: link:../../packages/event-schema
+      bullmq:
+        specifier: ^5.0.0
+        version: 5.71.0
+      fastify:
+        specifier: ^5.0.0
+        version: 5.8.2
+    devDependencies:
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
       tsx:
         specifier: ^4.0.0
         version: 4.21.0
