@@ -73,6 +73,7 @@ export interface EventRow {
   schema_version: string;
   timestamp: Date;
   received_at: Date;
+  ingestion_order: number;
 }
 
 // Subset for INSERT — omits DB-defaulted columns
