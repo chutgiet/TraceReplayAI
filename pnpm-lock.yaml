@@ -93,6 +93,9 @@ importers:
         specifier: workspace:*
         version: link:../event-schema
     devDependencies:
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
@@ -139,6 +142,9 @@ importers:
       '@tracereplay/event-schema':
         specifier: workspace:*
         version: link:../../packages/event-schema
+      '@tracereplay/replay-engine':
+        specifier: workspace:*
+        version: link:../../packages/replay-engine
       fastify:
         specifier: ^5.0.0
         version: 5.8.2
