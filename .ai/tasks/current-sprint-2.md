@@ -13,7 +13,7 @@ Stand up the SDK, query service, and normalizer so real agent telemetry can be i
 | ID | Task | Status | Priority | Est |
 |----|------|--------|----------|-----|
 | F2-001 | TypeScript SDK: lightweight event client | Done | P0 | M |
-| F2-002 | Query service: list runs + get run details | Not started | P0 | M |
+| F2-002 | Query service: list runs + get run details | Done | P0 | M |
 | F2-003 | Query service: run timeline API | Not started | P0 | S |
 | F2-004 | Out-of-order event handling in ingest-api | Not started | P1 | M |
 | F2-005 | Normalizer service: vendor → canonical mapping | Not started | P1 | L |

@@ -3,6 +3,28 @@ import { getPool } from './pool.js';
 import type { EventRow, InsertEventRow, InsertRunRow, RunRow } from './types.js';
 
 // ---------------------------------------------------------------------------
+// Shared filter / pagination types
+// ---------------------------------------------------------------------------
+
+export interface ListRunsFilter {
+  tenantId?: string;
+  status?: RunRow['status'];
+  agentId?: string;
+  startedAfter?: Date;
+  startedBefore?: Date;
+}
+
+export interface CursorPage {
+  cursor?: string;   // opaque cursor — currently the run's started_at ISO string
+  limit?: number;    // default 20, max 100
+}
+
+export interface ListRunsResult {
+  runs: RunRow[];
+  nextCursor: string | null;
+}
+
+// ---------------------------------------------------------------------------
 // runs
 // ---------------------------------------------------------------------------
 
@@ -54,6 +76,59 @@ export async function updateRunStatus(
 export async function getRunById(id: string, pool: Pool = getPool()): Promise<RunRow | null> {
   const result = await pool.query<RunRow>('SELECT * FROM runs WHERE id = $1', [id]);
   return result.rows[0] ?? null;
+}
+
+export async function listRuns(
+  filter: ListRunsFilter = {},
+  page: CursorPage = {},
+  pool: Pool = getPool(),
+): Promise<ListRunsResult> {
+  const limit = Math.min(Math.max(page.limit ?? 20, 1), 100);
+
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+  let paramIdx = 1;
+
+  if (filter.tenantId) {
+    conditions.push(`tenant_id = $${paramIdx++}`);
+    params.push(filter.tenantId);
+  }
+  if (filter.status) {
+    conditions.push(`status = $${paramIdx++}`);
+    params.push(filter.status);
+  }
+  if (filter.agentId) {
+    conditions.push(`agent_id = $${paramIdx++}`);
+    params.push(filter.agentId);
+  }
+  if (filter.startedAfter) {
+    conditions.push(`started_at >= $${paramIdx++}`);
+    params.push(filter.startedAfter);
+  }
+  if (filter.startedBefore) {
+    conditions.push(`started_at <= $${paramIdx++}`);
+    params.push(filter.startedBefore);
+  }
+  if (page.cursor) {
+    conditions.push(`started_at < $${paramIdx++}`);
+    params.push(new Date(page.cursor));
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  // Fetch one extra row to determine if there's a next page
+  params.push(limit + 1);
+
+  const sql = `SELECT * FROM runs ${where} ORDER BY started_at DESC LIMIT $${paramIdx}`;
+
+  const result = await pool.query<RunRow>(sql, params);
+
+  const hasMore = result.rows.length > limit;
+  const runs = hasMore ? result.rows.slice(0, limit) : result.rows;
+  const lastRun = runs[runs.length - 1];
+  const nextCursor = hasMore && lastRun ? lastRun.started_at.toISOString() : null;
+
+  return { runs, nextCursor };
 }
 
 // ---------------------------------------------------------------------------
