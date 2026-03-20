@@ -180,13 +180,22 @@ importers:
 
   tests:
     dependencies:
+      '@tracereplay/common':
+        specifier: workspace:*
+        version: link:../packages/common
       '@tracereplay/event-schema':
         specifier: workspace:*
         version: link:../packages/event-schema
       '@tracereplay/replay-engine':
         specifier: workspace:*
         version: link:../packages/replay-engine
+      pg:
+        specifier: ^8.12.0
+        version: 8.20.0
     devDependencies:
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.18.0
       typescript:
         specifier: ^5.4.0
         version: 5.9.3

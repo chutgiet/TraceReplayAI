@@ -16,7 +16,7 @@
 | F1-005 | Implement basic `replay-engine` timeline construction | ✅ Done | — |
 | F1-006 | Create test fixtures (5 canonical event sequences) | ✅ Done | — |
 | F1-007 | Unit tests for event-schema validators | ✅ Done | — |
-| F1-008 | Integration test: ingest → persist → replay | Not started | — |
+| F1-008 | Integration test: ingest → persist → replay | ✅ Done | — |
 
 ---
 
@@ -47,3 +47,4 @@
 | 2026-03-16 | F1-004 | Fastify ingest-api: POST /v1/events + /v1/events/batch, Zod validation, idempotent dedup, auto-run creation, 15 unit tests passing |
 | 2026-03-19 | F1-005 | replay-engine: buildTimeline() with chronological sorting, causal depth, parent-child linking, gap detection, paired durations, run summary. 25 unit tests passing |
 | 2026-03-19 | F1-006 | 5 canonical fixture sequences (simple-chat, multi-tool, error, partial-telemetry, approval-denied), fixture loader with Zod validation, 67 fixture tests passing |
+| 2026-03-19 | F1-008 | Integration test: ingest → persist → replay. 13 tests covering all 5 fixtures, idempotency, cross-run isolation, payload integrity, gap detection |
