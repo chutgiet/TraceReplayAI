@@ -15,6 +15,7 @@
     "@tracereplay/event-schema": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"
   }

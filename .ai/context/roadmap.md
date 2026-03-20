@@ -1,19 +1,19 @@
 # TraceReplay AI — Roadmap
 
-## Milestone 1: Foundation (Current)
+## Milestone 1: Foundation (Complete ✅)
 > Goal: Establish canonical event model, basic ingestion, and replay
 
 - [x] Repository structure and monorepo setup
 - [x] Engineering system prompts and agent context
-- [ ] `event-schema` package: types, Zod validators, constants
-- [ ] `common` package: shared utilities, ID generation, logging
-- [ ] `ingest-api` service: REST endpoint, schema validation, persistence
-- [ ] Database schema: events table, runs table, migrations
-- [ ] `replay-engine` package: basic timeline reconstruction from ordered events
-- [ ] Fixture suite: 5+ canonical event sequences for testing
-- [ ] Basic test coverage for schema validation and replay
+- [x] `event-schema` package: types, Zod validators, constants
+- [x] `common` package: shared utilities, DB pool, queries
+- [x] `ingest-api` service: REST endpoint, schema validation, persistence
+- [x] Database schema: events table, runs table, migrations
+- [x] `replay-engine` package: timeline construction, causal depth, gap detection, run summary
+- [x] Fixture suite: 5 canonical event sequences with Zod-validated loader
+- [x] Test coverage: 68 unit tests, 67 fixture tests, 13 integration tests
 
-## Milestone 2: Normalization + SDK
+## Milestone 2: Normalization + SDK (Current)
 > Goal: Accept telemetry from real agent frameworks
 
 - [ ] `normalizer` service: map raw telemetry → canonical events
