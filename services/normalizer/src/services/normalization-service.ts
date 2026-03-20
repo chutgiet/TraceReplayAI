@@ -1,4 +1,3 @@
-import type { TraceReplayEvent } from '@tracereplay/event-schema';
 import type {
   RawVendorEvent,
   NormalizationResult,
@@ -10,7 +9,7 @@ import {
   GitHubCopilotAdapter,
   ClaudeCodeAdapter,
 } from '@tracereplay/connectors-core';
-import type { NormalizerStats } from './types.js';
+import type { NormalizerStats } from '../types.js';
 
 // ---------------------------------------------------------------------------
 // NormalizationService — stateless domain logic
