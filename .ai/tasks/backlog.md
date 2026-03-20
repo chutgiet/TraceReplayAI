@@ -11,9 +11,9 @@
 - [x] Batch ingestion endpoint
 
 ### Replay & Lineage
-- [ ] Basic replay engine: ordered timeline from events
-- [ ] Causal replay: parent-child event linking
-- [ ] Gap detection: identify missing spans in a run
+- [x] Basic replay engine: ordered timeline from events
+- [x] Causal replay: parent-child event linking
+- [x] Gap detection: identify missing spans in a run
 - [ ] Lineage graph model: run → events → side effects
 - [ ] Sub-agent run linking
 
