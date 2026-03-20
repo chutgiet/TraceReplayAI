@@ -1,10 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import type {
   TraceReplayEvent,
   EventId,
   RunId,
   TenantId,
-  TypedEvent,
 } from '@tracereplay/event-schema';
 import { SCHEMA_VERSION } from '@tracereplay/event-schema';
 import { buildTimeline } from '../timeline-builder.js';

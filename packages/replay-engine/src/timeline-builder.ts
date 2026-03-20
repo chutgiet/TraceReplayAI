@@ -37,7 +37,7 @@ function compareEvents(a: TraceReplayEvent, b: TraceReplayEvent): number {
 /** Compute depth for every event in the parent→children tree. */
 function computeDepths(
   events: TraceReplayEvent[],
-  childrenMap: Map<EventId, EventId[]>,
+  _childrenMap: Map<EventId, EventId[]>,
 ): Map<EventId, number> {
   const parentOf = new Map<EventId, EventId>();
   for (const e of events) {
