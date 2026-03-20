@@ -1,0 +1,97 @@
+[
+  {
+    "id": "a0000006-0000-4000-8000-000000000003",
+    "runId": "b0000006-0000-4000-8000-000000000001",
+    "type": "model.request",
+    "timestamp": "2026-03-15T14:00:01.100Z",
+    "sequence": 3,
+    "tenantId": "tenant-fixture-006",
+    "sourceAgent": "ooo-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "inputTokens": 20,
+      "temperature": 0.5
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000006-0000-4000-8000-000000000006",
+    "runId": "b0000006-0000-4000-8000-000000000001",
+    "type": "run.end",
+    "timestamp": "2026-03-15T14:00:03.000Z",
+    "sequence": 6,
+    "tenantId": "tenant-fixture-006",
+    "sourceAgent": "ooo-agent",
+    "payload": {
+      "status": "success",
+      "durationMs": 3000,
+      "summary": "Completed out-of-order test run"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000006-0000-4000-8000-000000000001",
+    "runId": "b0000006-0000-4000-8000-000000000001",
+    "type": "run.start",
+    "timestamp": "2026-03-15T14:00:00.000Z",
+    "sequence": 1,
+    "tenantId": "tenant-fixture-006",
+    "sourceAgent": "ooo-agent",
+    "sourceFramework": "custom",
+    "payload": {
+      "runName": "out-of-order-test",
+      "triggerSource": "api"
+    },
+    "tags": ["fixture", "out-of-order"],
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000006-0000-4000-8000-000000000005",
+    "runId": "b0000006-0000-4000-8000-000000000001",
+    "type": "prompt.output",
+    "timestamp": "2026-03-15T14:00:02.300Z",
+    "sequence": 5,
+    "tenantId": "tenant-fixture-006",
+    "sourceAgent": "ooo-agent",
+    "payload": {
+      "content": "The answer is 42.",
+      "tokenCount": 8,
+      "finishReason": "stop",
+      "modelId": "gpt-4"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000006-0000-4000-8000-000000000002",
+    "runId": "b0000006-0000-4000-8000-000000000001",
+    "type": "prompt.input",
+    "timestamp": "2026-03-15T14:00:01.000Z",
+    "sequence": 2,
+    "tenantId": "tenant-fixture-006",
+    "sourceAgent": "ooo-agent",
+    "payload": {
+      "role": "user",
+      "content": "What is the meaning of life?",
+      "tokenCount": 7
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000006-0000-4000-8000-000000000004",
+    "runId": "b0000006-0000-4000-8000-000000000001",
+    "type": "model.response",
+    "timestamp": "2026-03-15T14:00:02.200Z",
+    "sequence": 4,
+    "tenantId": "tenant-fixture-006",
+    "sourceAgent": "ooo-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "outputTokens": 10,
+      "latencyMs": 1100,
+      "cost": 0.002
+    },
+    "schemaVersion": "1.0.0"
+  }
+]

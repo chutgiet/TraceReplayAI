@@ -65,9 +65,9 @@ describe('Fixture schema validation', () => {
     });
   }
 
-  it('loadAllFixtures loads all 5 fixtures', () => {
+  it('loadAllFixtures loads all 6 fixtures', () => {
     const all = loadAllFixtures();
-    expect(Object.keys(all)).toHaveLength(5);
+    expect(Object.keys(all)).toHaveLength(6);
     for (const name of FIXTURE_NAMES) {
       expect(all[name].length).toBeGreaterThan(0);
     }

@@ -17,6 +17,7 @@ export const FIXTURE_NAMES = [
   'error-run',
   'partial-telemetry-run',
   'approval-denied-run',
+  'out-of-order-run',
 ] as const;
 
 export type FixtureName = (typeof FIXTURE_NAMES)[number];

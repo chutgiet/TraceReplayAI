@@ -179,7 +179,7 @@ export async function getEventsByRunId(
   const result = await pool.query<EventRow>(
     `SELECT * FROM events
      WHERE run_id = $1
-     ORDER BY sequence NULLS LAST, "timestamp"`,
+     ORDER BY "timestamp", sequence NULLS LAST, ingestion_order`,
     [runId],
   );
   return result.rows;
