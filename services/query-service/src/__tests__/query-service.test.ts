@@ -65,6 +65,12 @@ vi.mock('@tracereplay/common', () => ({
   closePool: vi.fn(),
 }));
 
+const mockBuildTimeline = vi.fn();
+
+vi.mock('@tracereplay/replay-engine', () => ({
+  buildTimeline: (...args: unknown[]) => mockBuildTimeline(...args),
+}));
+
 // ---------------------------------------------------------------------------
 // GET /v1/runs
 // ---------------------------------------------------------------------------
@@ -381,6 +387,199 @@ describe('GET /v1/runs/:runId/events', () => {
 
     expect(res.statusCode).toBe(500);
     expect(res.json().error.code).toBe('QUERY_FAILED');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /v1/runs/:runId/timeline
+// ---------------------------------------------------------------------------
+
+describe('GET /v1/runs/:runId/timeline', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+
+  beforeEach(async () => {
+    app = await buildApp();
+    vi.clearAllMocks();
+  });
+
+  const fakeTimeline = {
+    entries: [
+      {
+        event: {
+          id: VALID_UUID_2,
+          runId: VALID_UUID,
+          type: 'run.start',
+          timestamp: '2026-03-15T10:00:00.000Z',
+          tenantId: 'tenant-abc',
+          sourceAgent: 'agent-1',
+          payload: {},
+          schemaVersion: '1.0.0',
+        },
+        index: 0,
+        depth: 0,
+        childEventIds: [],
+      },
+    ],
+    gaps: [],
+    summary: {
+      runId: VALID_UUID,
+      tenantId: 'tenant-abc',
+      eventCount: 1,
+      eventTypeCounts: { 'run.start': 1 },
+      startTime: '2026-03-15T10:00:00.000Z',
+      endTime: '2026-03-15T10:00:00.000Z',
+      durationMs: 0,
+      hasGaps: false,
+      toolCount: 0,
+      hasErrors: false,
+    },
+  };
+
+  it('returns 200 with timeline for a valid run', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([makeEventRow()]);
+    mockBuildTimeline.mockReturnValueOnce(fakeTimeline);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.entries).toHaveLength(1);
+    expect(body.data.gaps).toEqual([]);
+    expect(body.data.summary).toBeDefined();
+    expect(body.data.summary.eventCount).toBe(1);
+    expect(body.meta.requestId).toBeDefined();
+  });
+
+  it('calls buildTimeline with mapped canonical events', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([makeEventRow()]);
+    mockBuildTimeline.mockReturnValueOnce(fakeTimeline);
+
+    await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(mockBuildTimeline).toHaveBeenCalledTimes(1);
+    const [events] = mockBuildTimeline.mock.calls[0]!;
+    expect(events).toHaveLength(1);
+    // Verify DB row was mapped to canonical event format (camelCase)
+    expect(events[0].id).toBe(VALID_UUID_2);
+    expect(events[0].runId).toBe(VALID_UUID);
+    expect(events[0].tenantId).toBe('tenant-abc');
+    expect(events[0].type).toBe('run.start');
+    expect(typeof events[0].timestamp).toBe('string');
+  });
+
+  it('returns 404 for nonexistent run', async () => {
+    mockGetRunById.mockResolvedValueOnce(null);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.json().error.code).toBe('RUN_NOT_FOUND');
+  });
+
+  it('returns 400 for invalid UUID', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/v1/runs/not-a-uuid/timeline',
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.code).toBe('INVALID_RUN_ID');
+  });
+
+  it('returns timeline with gaps when events are incomplete', async () => {
+    const timelineWithGaps = {
+      ...fakeTimeline,
+      gaps: [
+        {
+          type: 'missing_run_end',
+          message: 'No run.end event found.',
+          relatedEventIds: [],
+          detectedAtIndex: 0,
+        },
+      ],
+      summary: { ...fakeTimeline.summary, hasGaps: true },
+    };
+    mockGetRunById.mockResolvedValueOnce(makeRunRow({ status: 'running', ended_at: null }));
+    mockGetEventsByRunId.mockResolvedValueOnce([makeEventRow()]);
+    mockBuildTimeline.mockReturnValueOnce(timelineWithGaps);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.gaps).toHaveLength(1);
+    expect(body.data.gaps[0].type).toBe('missing_run_end');
+    expect(body.data.summary.hasGaps).toBe(true);
+  });
+
+  it('returns empty timeline for run with no events', async () => {
+    const emptyTimeline = {
+      entries: [],
+      gaps: [],
+      summary: {
+        runId: '',
+        tenantId: '',
+        eventCount: 0,
+        eventTypeCounts: {},
+        hasGaps: false,
+        toolCount: 0,
+        hasErrors: false,
+      },
+    };
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+    mockBuildTimeline.mockReturnValueOnce(emptyTimeline);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.entries).toEqual([]);
+    expect(res.json().data.summary.eventCount).toBe(0);
+  });
+
+  it('returns 500 when DB throws', async () => {
+    mockGetRunById.mockRejectedValueOnce(new Error('DB down'));
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json().error.code).toBe('TIMELINE_FAILED');
+  });
+
+  it('returns 500 when buildTimeline throws', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([makeEventRow()]);
+    mockBuildTimeline.mockImplementationOnce(() => {
+      throw new Error('Timeline construction error');
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json().error.code).toBe('TIMELINE_FAILED');
   });
 });
 
