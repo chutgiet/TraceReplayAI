@@ -1,0 +1,80 @@
+[
+  {
+    "id": "a0000004-0000-4000-8000-000000000001",
+    "runId": "b0000004-0000-4000-8000-000000000001",
+    "type": "prompt.input",
+    "timestamp": "2026-03-15T13:00:01.000Z",
+    "sequence": 3,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "unknown-agent",
+    "payload": {
+      "role": "user",
+      "content": "Summarize the quarterly report",
+      "tokenCount": 6
+    },
+    "tags": ["fixture", "partial"],
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000004-0000-4000-8000-000000000002",
+    "runId": "b0000004-0000-4000-8000-000000000001",
+    "type": "prompt.output",
+    "timestamp": "2026-03-15T13:00:03.000Z",
+    "sequence": 5,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "unknown-agent",
+    "payload": {
+      "content": "The quarterly report shows a 12% increase in revenue with strong growth in the cloud segment.",
+      "tokenCount": 18,
+      "finishReason": "stop"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000004-0000-4000-8000-000000000003",
+    "runId": "b0000004-0000-4000-8000-000000000001",
+    "type": "tool.call.end",
+    "timestamp": "2026-03-15T13:00:04.000Z",
+    "sequence": 7,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "unknown-agent",
+    "payload": {
+      "toolName": "pdf-reader",
+      "output": { "pages": 42, "extractedText": "[truncated]" },
+      "durationMs": 3200,
+      "success": true
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000004-0000-4000-8000-000000000004",
+    "runId": "b0000004-0000-4000-8000-000000000001",
+    "type": "model.response",
+    "timestamp": "2026-03-15T13:00:02.500Z",
+    "sequence": 4,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "unknown-agent",
+    "payload": {
+      "modelProvider": "azure",
+      "modelId": "gpt-4-turbo",
+      "outputTokens": 18,
+      "latencyMs": 900
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000004-0000-4000-8000-000000000005",
+    "runId": "b0000004-0000-4000-8000-000000000001",
+    "type": "annotation",
+    "timestamp": "2026-03-15T13:00:05.000Z",
+    "sequence": 9,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "unknown-agent",
+    "payload": {
+      "key": "data_quality",
+      "value": "incomplete",
+      "annotatedBy": "telemetry-monitor"
+    },
+    "schemaVersion": "1.0.0"
+  }
+]

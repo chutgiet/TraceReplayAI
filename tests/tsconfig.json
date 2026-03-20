@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "..",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "noEmit": true
+  },
+  "include": [
+    "fixtures/**/*.ts",
+    "integration/**/*.ts",
+    "e2e/**/*.ts",
+    "performance/**/*.ts",
+    "../services/ingest-api/src/services/ingest-service.ts"
+  ]
+}
