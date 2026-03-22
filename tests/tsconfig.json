@@ -12,6 +12,13 @@
     "integration/**/*.ts",
     "e2e/**/*.ts",
     "performance/**/*.ts",
-    "../services/ingest-api/src/services/ingest-service.ts"
+    "../services/ingest-api/src/services/ingest-service.ts",
+    "../services/ingest-api/src/index.ts",
+    "../services/ingest-api/src/routes/ingest.ts",
+    "../services/query-service/src/index.ts",
+    "../services/query-service/src/routes/runs.ts",
+    "../services/query-service/src/routes/events.ts",
+    "../services/query-service/src/routes/timeline.ts",
+    "../packages/sdk-typescript/src/**/*.ts"
   ]
 }

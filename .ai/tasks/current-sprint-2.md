@@ -18,8 +18,8 @@ Stand up the SDK, query service, and normalizer so real agent telemetry can be i
 | F2-004 | Out-of-order event handling in ingest-api | ✅ | P1 | M |
 | F2-005 | Normalizer service: vendor → canonical mapping | ✅ | P1 | L |
 | F2-006 | Worker service: BullMQ async job processing | ✅ | P1 | M |
-| F2-007 | Lineage graph model: core data structures | Not started | P2 | M |
-| F2-008 | Integration test: SDK → ingest → query → replay | Not started | P2 | S |
+| F2-007 | Lineage graph model: core data structures | ✅ | P2 | M |
+| F2-008 | Integration test: SDK → ingest → query → replay | ✅ | P2 | S |
 
 Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days)
 
