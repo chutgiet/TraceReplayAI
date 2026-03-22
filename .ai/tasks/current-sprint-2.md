@@ -16,7 +16,7 @@ Stand up the SDK, query service, and normalizer so real agent telemetry can be i
 | F2-002 | Query service: list runs + get run details | ✅ | P0 | M |
 | F2-003 | Query service: run timeline API | ✅ | P0 | S |
 | F2-004 | Out-of-order event handling in ingest-api | ✅ | P1 | M |
-| F2-005 | Normalizer service: vendor → canonical mapping | Not started | P1 | L |
+| F2-005 | Normalizer service: vendor → canonical mapping | ✅ | P1 | L |
 | F2-006 | Worker service: BullMQ async job processing | Not started | P1 | M |
 | F2-007 | Lineage graph model: core data structures | Not started | P2 | M |
 | F2-008 | Integration test: SDK → ingest → query → replay | Not started | P2 | S |
@@ -114,23 +114,42 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 
 ### F2-005 — Normalizer service: vendor → canonical mapping
 
-**Goal:** Build the normalizer service that transforms raw vendor telemetry (e.g., OpenAI Agents SDK format) into canonical events.
+**Goal:** Build the normalizer service that transforms raw vendor telemetry into canonical events, with a vendor-neutral adapter architecture.
 
-**Scope:**
-- Define `NormalizerAdapter` interface in `packages/connectors-core/src/`
-- Implement `OpenAIAgentsAdapter` as first adapter (maps OpenAI trace format → canonical events)
-- Normalizer service consumes from BullMQ queue, runs adapter, writes canonical events
-- Passthrough adapter for events already in canonical format
-- Error handling: dead-letter queue for events that fail normalization
+**Scope (delivered):**
+- `NormalizerAdapter` interface + `AdapterRegistry` in `packages/connectors-core/src/types.ts`
+- Vendor-neutral `BaseAgentAdapter` abstract class with template method pattern (`base-agent-adapter.ts`)
+- `TraceFieldMapping` interface for configurable envelope field extraction across vendors
+- Shared `adapter-utils.ts` with variadic field extractors, branded ID constructors, status/policy mappers
+- `PassthroughAdapter` for events already in canonical format
+- `OpenAIAgentsAdapter` — maps OpenAI Agents SDK traces (agent.start/end, tool_call.*, generation.*, guardrail.*, handoff)
+- `GitHubCopilotAdapter` — maps GitHub Copilot agent traces (copilot.session.*, copilot.tool.*, copilot.completion.*)
+- `ClaudeCodeAdapter` — maps Anthropic Claude Code traces (conversation.*, tool_use.*, inference.*, permission.*)
+- `NormalizationService` with batch processing, stats tracking, dead-letter counter
+- `NormalizationProcessor` with BullMQ queue consumer, retry config, dead-letter queue
+- Normalizer Fastify service with health check, Redis connection, graceful shutdown
 
-**Key files:** `packages/connectors-core/src/adapter.ts`, `services/normalizer/src/index.ts`, `services/normalizer/src/adapters/openai-agents.ts`
+**Key files:**
+- `packages/connectors-core/src/types.ts` — NormalizerAdapter, AdapterRegistry, RawVendorEvent
+- `packages/connectors-core/src/base-agent-adapter.ts` — BaseAgentAdapter, TraceFieldMapping
+- `packages/connectors-core/src/adapter-utils.ts` — shared utilities
+- `packages/connectors-core/src/passthrough-adapter.ts` — PassthroughAdapter
+- `packages/connectors-core/src/openai-agents-adapter.ts` — OpenAIAgentsAdapter
+- `packages/connectors-core/src/github-copilot-adapter.ts` — GitHubCopilotAdapter
+- `packages/connectors-core/src/claude-code-adapter.ts` — ClaudeCodeAdapter
+- `services/normalizer/src/services/normalization-service.ts` — NormalizationService
+- `services/normalizer/src/queues/normalization-processor.ts` — BullMQ processor + DLQ
 
 **Acceptance criteria:**
-- [ ] `NormalizerAdapter` interface defined
-- [ ] Passthrough adapter works for canonical events
-- [ ] OpenAI Agents adapter maps basic trace data
-- [ ] Dead-letter queue for failed normalization
-- [ ] Unit tests for adapters
+- [x] `NormalizerAdapter` interface defined
+- [x] Passthrough adapter works for canonical events
+- [x] OpenAI Agents adapter maps basic trace data
+- [x] Dead-letter queue for failed normalization
+- [x] Unit tests for adapters (109 tests across 5 test files in connectors-core)
+- [x] Vendor-neutral `BaseAgentAdapter` with pluggable field mappings
+- [x] GitHub Copilot adapter (22 tests)
+- [x] Claude Code adapter (28 tests)
+- [x] Normalizer service tests (12 tests)
 
 ---
 
@@ -218,10 +237,10 @@ F2-008 (E2E test)     ──── depends on F2-001, F2-002, F2-003
 
 ## Sprint exit criteria
 
-- [ ] SDK can send events to ingest-api and receive success responses
-- [ ] Query service exposes runs, events, and timeline endpoints
-- [ ] Out-of-order ingestion is tested and documented
-- [ ] Normalizer can process at least one vendor format (OpenAI)
+- [x] SDK can send events to ingest-api and receive success responses
+- [x] Query service exposes runs, events, and timeline endpoints
+- [x] Out-of-order ingestion is tested and documented
+- [x] Normalizer can process at least one vendor format (OpenAI + Copilot + Claude)
 - [ ] Worker service processes async jobs from Redis queue
 - [ ] Lineage graph model produces correct graphs from timelines
 - [ ] End-to-end integration test passes

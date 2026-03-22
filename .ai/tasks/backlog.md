@@ -7,7 +7,7 @@
 - [x] Zod runtime validators for all event types
 - [x] Ingest API with schema validation and persistence
 - [x] Idempotent ingestion (dedup by event ID)
-- [ ] Out-of-order event handling strategy
+- [x] Out-of-order event handling strategy
 - [x] Batch ingestion endpoint
 
 ### Replay & Lineage
@@ -18,9 +18,11 @@
 - [ ] Sub-agent run linking
 
 ### SDK
-- [ ] TypeScript SDK: lightweight event client
+- [x] TypeScript SDK: lightweight event client
 - [ ] Auto-instrumentation helpers for common patterns
-- [ ] OpenAI Agents SDK adapter
+- [x] OpenAI Agents SDK adapter
+- [x] GitHub Copilot adapter
+- [x] Claude Code adapter
 - [ ] LangGraph/LangChain adapter
 
 ---
@@ -28,9 +30,9 @@
 ## Priority: Medium
 
 ### Investigation & Query
-- [ ] Query service: list runs, filter by status/agent/time
+- [x] Query service: list runs, filter by status/agent/time
 - [ ] Full-text search across event payloads
-- [ ] Run timeline API for frontend consumption
+- [x] Run timeline API for frontend consumption
 - [ ] Event detail API with redaction awareness
 
 ### Frontend
@@ -61,7 +63,7 @@
 - [ ] Audit log for platform operations
 
 ### Connectors
-- [ ] Connector framework and base types
+- [x] Connector framework and base types (BaseAgentAdapter + TraceFieldMapping + AdapterRegistry)
 - [ ] Slack connector (approval notifications)
 - [ ] Jira connector (incident linking)
 - [ ] SIEM export connector
