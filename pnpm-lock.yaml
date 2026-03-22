@@ -270,6 +270,12 @@ importers:
       '@tracereplay/replay-engine':
         specifier: workspace:*
         version: link:../packages/replay-engine
+      '@tracereplay/sdk-typescript':
+        specifier: workspace:*
+        version: link:../packages/sdk-typescript
+      fastify:
+        specifier: ^5.0.0
+        version: 5.8.2
       pg:
         specifier: ^8.12.0
         version: 8.20.0
@@ -1900,6 +1906,14 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 1.2.0
 
+  '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@22.19.15))':
+    dependencies:
+      '@vitest/spy': 2.1.9
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 5.4.21(@types/node@22.19.15)
+
   '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@25.5.0))':
     dependencies:
       '@vitest/spy': 2.1.9
@@ -2623,7 +2637,7 @@ snapshots:
   vitest@2.1.9(@types/node@22.19.15):
     dependencies:
       '@vitest/expect': 2.1.9
-      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@25.5.0))
+      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@22.19.15))
       '@vitest/pretty-format': 2.1.9
       '@vitest/runner': 2.1.9
       '@vitest/snapshot': 2.1.9

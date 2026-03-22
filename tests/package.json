@@ -12,6 +12,8 @@
     "@tracereplay/event-schema": "workspace:*",
     "@tracereplay/replay-engine": "workspace:*",
     "@tracereplay/common": "workspace:*",
+    "@tracereplay/sdk-typescript": "workspace:*",
+    "fastify": "^5.0.0",
     "pg": "^8.12.0"
   },
   "devDependencies": {
