@@ -27,7 +27,7 @@ pnpm install
 docker compose up -d
 
 # Copy environment variables
-cp .env.example .env
+cp .env.template .env
 
 # Build all packages
 pnpm build

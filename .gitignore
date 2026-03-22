@@ -40,4 +40,3 @@ coverage/
 # Temp
 tmp/
 .temp/
-.env.example

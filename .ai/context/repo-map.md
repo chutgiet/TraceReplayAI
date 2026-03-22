@@ -132,6 +132,6 @@ Future:
 | `pnpm-workspace.yaml` | Workspace package definitions |
 | `turbo.json` | Turborepo build pipeline config |
 | `tsconfig.base.json` | Shared TypeScript configuration |
-| `.env.example` | Environment variable template |
+| `.env.template` | Environment variable template |
 | `docker-compose.yml` | Local development services |
 | `README.md` | Project overview and quickstart |
