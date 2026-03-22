@@ -12,7 +12,7 @@ Build the Investigation UI and supporting APIs so users can visually browse runs
 
 | ID | Task | Status | Priority | Est |
 |----|------|--------|----------|-----|
-| F3-001 | Next.js app scaffold with Tailwind | 🔲 | P0 | M |
+| F3-001 | Next.js app scaffold with Tailwind | ✅ | P0 | M |
 | F3-002 | Shared UI component library (`packages/ui`) | 🔲 | P0 | M |
 | F3-003 | Run list page with filters | 🔲 | P0 | M |
 | F3-004 | Run detail / replay timeline view | 🔲 | P0 | L |
