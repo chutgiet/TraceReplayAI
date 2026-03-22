@@ -17,7 +17,7 @@ Stand up the SDK, query service, and normalizer so real agent telemetry can be i
 | F2-003 | Query service: run timeline API | ✅ | P0 | S |
 | F2-004 | Out-of-order event handling in ingest-api | ✅ | P1 | M |
 | F2-005 | Normalizer service: vendor → canonical mapping | ✅ | P1 | L |
-| F2-006 | Worker service: BullMQ async job processing | Not started | P1 | M |
+| F2-006 | Worker service: BullMQ async job processing | ✅ | P1 | M |
 | F2-007 | Lineage graph model: core data structures | Not started | P2 | M |
 | F2-008 | Integration test: SDK → ingest → query → replay | Not started | P2 | S |
 
@@ -241,7 +241,7 @@ F2-008 (E2E test)     ──── depends on F2-001, F2-002, F2-003
 - [x] Query service exposes runs, events, and timeline endpoints
 - [x] Out-of-order ingestion is tested and documented
 - [x] Normalizer can process at least one vendor format (OpenAI + Copilot + Claude)
-- [ ] Worker service processes async jobs from Redis queue
+- [x] Worker service processes async jobs from Redis queue
 - [ ] Lineage graph model produces correct graphs from timelines
 - [ ] End-to-end integration test passes
 - [ ] All new code has unit test coverage > 80%
