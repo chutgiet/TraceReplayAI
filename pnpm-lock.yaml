@@ -90,6 +90,22 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@25.5.0)
 
+  packages/graph-model:
+    dependencies:
+      '@tracereplay/event-schema':
+        specifier: workspace:*
+        version: link:../event-schema
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@25.5.0)
+
   packages/replay-engine:
     dependencies:
       '@tracereplay/common':
