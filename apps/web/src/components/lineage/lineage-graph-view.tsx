@@ -1,13 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ReactFlow,
   Background,
   BackgroundVariant,
   type NodeTypes,
   type EdgeTypes,
-  type OnNodeClick,
   type Node,
   ReactFlowProvider,
 } from '@xyflow/react';
@@ -69,10 +68,9 @@ function LineageGraphViewInner({ events }: LineageGraphViewProps) {
     [],
   );
 
-  const handleNodeClick: OnNodeClick = useCallback(
+  const handleNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node) => {
-      const data = node.data as LineageNodeData;
-      setSelectedNodeData(data);
+      setSelectedNodeData(node.data as unknown as LineageNodeData);
     },
     [],
   );

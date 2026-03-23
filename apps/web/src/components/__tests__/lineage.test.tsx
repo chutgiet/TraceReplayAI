@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import type { RunEvent } from '@/lib/api';
 import type { LineageNodeData } from '@/components/lineage/types';
 import { getNodeTypeVisual, getEventNodeVisual, getEdgeTypeVisual, getAllNodeVisuals, getAllEdgeVisuals } from '@/components/lineage/node-type-config';
 import { GraphLegend } from '@/components/lineage/graph-legend';
@@ -319,7 +318,8 @@ describe('NodeDetailPanel', () => {
     expect(screen.getByText('file_create')).toBeInTheDocument();
     expect(screen.getByText('filesystem')).toBeInTheDocument();
     expect(screen.getByText('Created output.txt')).toBeInTheDocument();
-    expect(screen.getByText('Yes')).toBeInTheDocument(); // reversible
+    // Both reversible and success render "Yes"
+    expect(screen.getAllByText('Yes')).toHaveLength(2);
   });
 
   it('renders external_system node fields correctly', () => {

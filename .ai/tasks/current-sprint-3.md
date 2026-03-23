@@ -17,7 +17,7 @@ Build the Investigation UI and supporting APIs so users can visually browse runs
 | F3-003 | Run list page with filters | ✅ | P0 | M |
 | F3-004 | Run detail / replay timeline view | ✅ | P0 | L |
 | F3-005 | Event detail expandable panel | ✅ | P1 | M |
-| F3-006 | Basic lineage graph visualization | 🔲 | P1 | L |
+| F3-006 | Basic lineage graph visualization | ✅ | P1 | L |
 | F3-007 | Event detail API with redaction awareness | 🔲 | P1 | M |
 | F3-008 | Redaction engine: configurable field-level rules | 🔲 | P1 | M |
 | F3-009 | Full-text search across event payloads | 🔲 | P2 | M |

@@ -5,7 +5,6 @@ import type { Node, Edge } from '@xyflow/react';
 import type {
   LineageGraph,
   LineageNode,
-  LineageEdge,
   EventNodeMeta,
   RunNodeMeta,
   SideEffectNodeMeta,
@@ -15,7 +14,7 @@ import { buildLineageGraph } from '@tracereplay/graph-model';
 import type { TraceReplayEvent } from '@tracereplay/event-schema';
 import type { RunEvent } from '@/lib/api';
 import type { LineageNodeData, LineageEdgeData } from './types';
-import { getEventNodeVisual, getNodeTypeVisual, getEdgeTypeVisual } from './node-type-config';
+import { getEdgeTypeVisual } from './node-type-config';
 
 // ---------------------------------------------------------------------------
 // Layout constants

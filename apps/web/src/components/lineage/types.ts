@@ -1,7 +1,7 @@
 import type { LineageNodeType, LineageEdgeType } from '@tracereplay/graph-model';
 
 /** Data payload attached to each React Flow node. */
-export interface LineageNodeData {
+export type LineageNodeData = {
   /** Original graph-model node type. */
   nodeType: LineageNodeType;
   /** Human-readable label for the node. */
@@ -16,14 +16,16 @@ export interface LineageNodeData {
   selected?: boolean;
   /** Extra metadata for tooltip / detail display. */
   meta: Record<string, unknown>;
-}
+  [key: string]: unknown;
+};
 
 /** Data payload attached to each React Flow edge. */
-export interface LineageEdgeData {
+export type LineageEdgeData = {
   /** Original graph-model edge type. */
   edgeType: LineageEdgeType;
   /** Human-readable label for the edge. */
   label?: string;
   /** Extra metadata for tooltip display. */
   meta: Record<string, unknown>;
-}
+  [key: string]: unknown;
+};
