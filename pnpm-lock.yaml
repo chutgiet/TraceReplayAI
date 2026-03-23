@@ -179,6 +179,19 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@25.5.0)(jsdom@25.0.1)
 
+  packages/redaction:
+    dependencies:
+      '@tracereplay/event-schema':
+        specifier: workspace:*
+        version: link:../event-schema
+    devDependencies:
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@25.5.0)(jsdom@25.0.1)
+
   packages/replay-engine:
     dependencies:
       '@tracereplay/common':
@@ -315,6 +328,9 @@ importers:
       '@tracereplay/event-schema':
         specifier: workspace:*
         version: link:../../packages/event-schema
+      '@tracereplay/redaction':
+        specifier: workspace:*
+        version: link:../../packages/redaction
       '@tracereplay/replay-engine':
         specifier: workspace:*
         version: link:../../packages/replay-engine

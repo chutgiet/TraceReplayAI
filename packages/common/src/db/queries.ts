@@ -172,6 +172,14 @@ export async function insertEvent(
   return row;
 }
 
+export async function getEventById(
+  id: string,
+  pool: Pool = getPool(),
+): Promise<EventRow | null> {
+  const result = await pool.query<EventRow>('SELECT * FROM events WHERE id = $1', [id]);
+  return result.rows[0] ?? null;
+}
+
 export async function getEventsByRunId(
   runId: string,
   pool: Pool = getPool(),

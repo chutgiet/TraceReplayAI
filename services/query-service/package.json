@@ -15,6 +15,7 @@
   "dependencies": {
     "@tracereplay/event-schema": "workspace:*",
     "@tracereplay/common": "workspace:*",
+    "@tracereplay/redaction": "workspace:*",
     "@tracereplay/replay-engine": "workspace:*",
     "fastify": "^5.0.0",
     "zod": "^3.23.0"
