@@ -58,11 +58,13 @@ function makeEventRow(overrides: Partial<EventRow> = {}): EventRow {
 
 const mockListRuns = vi.fn<(...args: unknown[]) => Promise<ListRunsResult>>();
 const mockGetRunById = vi.fn<(...args: unknown[]) => Promise<RunRow | null>>();
+const mockGetEventById = vi.fn<(...args: unknown[]) => Promise<EventRow | null>>();
 const mockGetEventsByRunId = vi.fn<(...args: unknown[]) => Promise<EventRow[]>>();
 
 vi.mock('@tracereplay/common', () => ({
   listRuns: (...args: unknown[]) => mockListRuns(...args),
   getRunById: (...args: unknown[]) => mockGetRunById(...args),
+  getEventById: (...args: unknown[]) => mockGetEventById(...args),
   getEventsByRunId: (...args: unknown[]) => mockGetEventsByRunId(...args),
   closePool: vi.fn(),
 }));
@@ -72,6 +74,32 @@ const mockBuildTimeline = vi.fn();
 vi.mock('@tracereplay/replay-engine', () => ({
   buildTimeline: (...args: unknown[]) => mockBuildTimeline(...args),
 }));
+
+// Mock redaction — use a pass-through by default, tests can override
+interface MockRedactionRecord {
+  fieldPath: string;
+  ruleId: string;
+  action: 'mask' | 'remove' | 'hash';
+}
+
+interface MockRedactionResult {
+  redactedPayload: Record<string, unknown>;
+  redactedFields: MockRedactionRecord[];
+}
+
+const mockRedact = vi.fn<(payload: Record<string, unknown>) => MockRedactionResult>(
+  (payload: Record<string, unknown>) => ({
+    redactedPayload: payload,
+    redactedFields: [],
+  }),
+);
+
+vi.mock('@tracereplay/redaction', () => ({
+  RedactionEngine: vi.fn().mockImplementation(() => ({
+    redact: (payload: Record<string, unknown>) => mockRedact(payload),
+  })),
+  BUILT_IN_RULES: [],
+}))
 
 // ---------------------------------------------------------------------------
 // GET /v1/runs
@@ -583,6 +611,188 @@ describe('GET /v1/runs/:runId/timeline', () => {
 
     expect(res.statusCode).toBe(500);
     expect(res.json().error.code).toBe('TIMELINE_FAILED');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /v1/events/:eventId — single event with redaction
+// ---------------------------------------------------------------------------
+
+describe('GET /v1/events/:eventId', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+
+  beforeEach(async () => {
+    app = await buildApp();
+    vi.clearAllMocks();
+    // Reset the redact mock to pass-through by default
+    mockRedact.mockImplementation((payload: Record<string, unknown>) => ({
+      redactedPayload: payload,
+      redactedFields: [],
+    }));
+  });
+
+  it('returns 200 with event data and empty redactedFields when nothing redacted', async () => {
+    const event = makeEventRow({
+      payload: { toolName: 'search', query: 'test' },
+    });
+    mockGetEventById.mockResolvedValueOnce(event);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.id).toBe(VALID_UUID_2);
+    expect(body.data.runId).toBe(VALID_UUID);
+    expect(body.data.type).toBe('run.start');
+    expect(body.data.payload).toEqual({ toolName: 'search', query: 'test' });
+    expect(body.data.redactedFields).toEqual([]);
+    expect(body.meta.requestId).toBeDefined();
+    expect(body.meta.redactionApplied).toBe(false);
+  });
+
+  it('returns 200 with redacted payload and redactedFields metadata', async () => {
+    const event = makeEventRow({
+      payload: { apiKey: 'sk-secret-123', content: 'visible' },
+    });
+    mockGetEventById.mockResolvedValueOnce(event);
+    mockRedact.mockReturnValueOnce({
+      redactedPayload: { apiKey: '[REDACTED]', content: 'visible' },
+      redactedFields: [
+        { fieldPath: 'apiKey', ruleId: 'builtin-api-key-field', action: 'mask' },
+      ],
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.payload.apiKey).toBe('[REDACTED]');
+    expect(body.data.payload.content).toBe('visible');
+    expect(body.data.redactedFields).toHaveLength(1);
+    expect(body.data.redactedFields[0]).toEqual({
+      fieldPath: 'apiKey',
+      ruleId: 'builtin-api-key-field',
+      action: 'mask',
+    });
+    expect(body.meta.redactionApplied).toBe(true);
+  });
+
+  it('returns 200 with multiple redacted fields', async () => {
+    const event = makeEventRow({
+      payload: { apiKey: 'sk-123', password: 'secret', name: 'test' },
+    });
+    mockGetEventById.mockResolvedValueOnce(event);
+    mockRedact.mockReturnValueOnce({
+      redactedPayload: { apiKey: '[REDACTED]', password: '[REDACTED]', name: 'test' },
+      redactedFields: [
+        { fieldPath: 'apiKey', ruleId: 'rule-1', action: 'mask' },
+        { fieldPath: 'password', ruleId: 'rule-2', action: 'mask' },
+      ],
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.redactedFields).toHaveLength(2);
+    expect(body.meta.redactionApplied).toBe(true);
+  });
+
+  it('returns 404 for nonexistent event', async () => {
+    mockGetEventById.mockResolvedValueOnce(null);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.json().error.code).toBe('EVENT_NOT_FOUND');
+    expect(res.json().error.requestId).toBeDefined();
+  });
+
+  it('returns 400 for invalid UUID', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/v1/events/not-a-uuid',
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.code).toBe('INVALID_EVENT_ID');
+    expect(res.json().error.details).toBeDefined();
+  });
+
+  it('formats timestamps as ISO strings', async () => {
+    mockGetEventById.mockResolvedValueOnce(makeEventRow());
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.timestamp).toBe('2026-03-15T10:00:00.000Z');
+    expect(body.data.receivedAt).toBe('2026-03-15T10:00:00.000Z');
+  });
+
+  it('preserves all event fields in response', async () => {
+    const event = makeEventRow({
+      sequence: 5,
+      parent_event_id: VALID_UUID,
+      source_framework: 'openai',
+      raw_meta: { original: 'data' },
+      tags: ['important', 'reviewed'],
+    });
+    mockGetEventById.mockResolvedValueOnce(event);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.sequence).toBe(5);
+    expect(body.data.parentEventId).toBe(VALID_UUID);
+    expect(body.data.sourceFramework).toBe('openai');
+    expect(body.data.rawMeta).toEqual({ original: 'data' });
+    expect(body.data.tags).toEqual(['important', 'reviewed']);
+    expect(body.data.schemaVersion).toBe('1.0.0');
+  });
+
+  it('returns 500 when DB throws', async () => {
+    mockGetEventById.mockRejectedValueOnce(new Error('DB down'));
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json().error.code).toBe('QUERY_FAILED');
+    expect(res.json().error.requestId).toBeDefined();
+  });
+
+  it('calls redaction engine with event payload', async () => {
+    const payload = { content: 'test prompt', apiKey: 'sk-123' };
+    mockGetEventById.mockResolvedValueOnce(makeEventRow({ payload }));
+
+    await app.inject({
+      method: 'GET',
+      url: `/v1/events/${VALID_UUID_2}`,
+    });
+
+    expect(mockRedact).toHaveBeenCalledWith(payload);
   });
 });
 

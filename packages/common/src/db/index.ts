@@ -5,6 +5,7 @@ export {
   getRunById,
   listRuns,
   insertEvent,
+  getEventById,
   getEventsByRunId,
   withTransaction,
 } from './queries.js';
