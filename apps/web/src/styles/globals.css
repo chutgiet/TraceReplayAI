@@ -28,6 +28,15 @@
   }
 }
 
+@layer utilities {
+  /* Reduced motion: disable animations */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slide-in-right {
+      animation: none;
+    }
+  }
+}
+
 @layer components {
   /* Event type color coding */
   .event-prompt {
