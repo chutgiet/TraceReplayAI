@@ -98,3 +98,14 @@ export interface InsertEventRow {
   schema_version: string;
   timestamp: Date;
 }
+
+// ---------------------------------------------------------------------------
+// Search result row — event row augmented with relevance rank and snippet
+// ---------------------------------------------------------------------------
+
+export interface SearchEventRow extends EventRow {
+  /** ts_rank relevance score (higher = more relevant). */
+  rank: number;
+  /** ts_headline snippet with matching terms highlighted. */
+  headline: string;
+}

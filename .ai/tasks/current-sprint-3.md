@@ -20,7 +20,7 @@ Build the Investigation UI and supporting APIs so users can visually browse runs
 | F3-006 | Basic lineage graph visualization | ✅ | P1 | L |
 | F3-007 | Event detail API with redaction awareness | ✅ | P1 | M |
 | F3-008 | Redaction engine: configurable field-level rules | ✅ | P1 | M |
-| F3-009 | Full-text search across event payloads | 🔲 | P2 | M |
+| F3-009 | Full-text search across event payloads | ✅ | P2 | M |
 | F3-010 | Docker Compose for full local stack | 🔲 | P2 | S |
 | F3-011 | Empty/error/loading UI states | 🔲 | P2 | S |
 | F3-012 | Sub-agent run linking | 🔲 | P2 | M |

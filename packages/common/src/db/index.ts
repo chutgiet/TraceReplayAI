@@ -7,9 +7,10 @@ export {
   insertEvent,
   getEventById,
   getEventsByRunId,
+  searchEvents,
   withTransaction,
 } from './queries.js';
-export type { ListRunsFilter, CursorPage, ListRunsResult } from './queries.js';
+export type { ListRunsFilter, CursorPage, ListRunsResult, SearchEventsFilter, SearchEventsPage, SearchEventsResult } from './queries.js';
 export type {
   SchemaMigrationRow,
   RunStatus,
@@ -18,4 +19,5 @@ export type {
   InsertRunRow,
   EventRow,
   InsertEventRow,
+  SearchEventRow,
 } from './types.js';
