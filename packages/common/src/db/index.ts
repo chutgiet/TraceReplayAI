@@ -13,6 +13,7 @@ export type {
   SchemaMigrationRow,
   RunStatus,
   RunRow,
+  RunListRow,
   InsertRunRow,
   EventRow,
   InsertEventRow,

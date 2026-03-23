@@ -39,7 +39,7 @@ pnpm test
 ### Development
 
 ```bash
-# Run all services in dev mode
+# Run all services in dev mode (uses Turborepo)
 pnpm dev
 
 # Run tests in watch mode
@@ -47,6 +47,45 @@ pnpm test -- --watch
 
 # Type check all packages
 pnpm typecheck
+```
+
+### Running the Web UI locally
+
+The investigation UI requires the infrastructure containers (PostgreSQL + Redis), the query-service backend, and the Next.js dev server.
+
+```bash
+# 1. Start infrastructure (PostgreSQL + Redis)
+docker compose up -d
+
+# 2. Set up environment variables (first time only)
+cp .env.template .env
+cp apps/web/.env.local.template apps/web/.env.local
+
+# 3. Build all packages (required before first run)
+pnpm build
+
+# 4. Start the query-service backend (port 3002)
+cd services/query-service && pnpm dev
+
+# 5. In a separate terminal, start the Next.js web app (port 3000)
+cd apps/web && pnpm dev
+
+# 6. Open the UI
+open http://localhost:3000
+```
+
+| Service | URL | Description |
+|---|---|---|
+| Web UI | http://localhost:3000 | Next.js investigation & replay UI |
+| Query Service | http://localhost:3002 | Fastify API (healthcheck: `/healthz`) |
+| PostgreSQL | localhost:5432 | Event store (user: `tracereplay`) |
+| Redis | localhost:6379 | Job queue |
+
+To stop everything:
+
+```bash
+# Stop the dev servers (Ctrl+C in each terminal), then:
+docker compose down
 ```
 
 ---

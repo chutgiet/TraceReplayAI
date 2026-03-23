@@ -1,6 +1,6 @@
 import { type Pool, type PoolClient } from 'pg';
 import { getPool } from './pool.js';
-import type { EventRow, InsertEventRow, InsertRunRow, RunRow } from './types.js';
+import type { EventRow, InsertEventRow, InsertRunRow, RunListRow, RunRow } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Shared filter / pagination types
@@ -20,7 +20,7 @@ export interface CursorPage {
 }
 
 export interface ListRunsResult {
-  runs: RunRow[];
+  runs: RunListRow[];
   nextCursor: string | null;
 }
 
@@ -119,9 +119,9 @@ export async function listRuns(
   // Fetch one extra row to determine if there's a next page
   params.push(limit + 1);
 
-  const sql = `SELECT * FROM runs ${where} ORDER BY started_at DESC LIMIT $${paramIdx}`;
+  const sql = `SELECT r.*, (SELECT COUNT(*) FROM events e WHERE e.run_id = r.id) AS event_count FROM runs r ${where} ORDER BY r.started_at DESC LIMIT $${paramIdx}`;
 
-  const result = await pool.query<RunRow>(sql, params);
+  const result = await pool.query<RunListRow>(sql, params);
 
   const hasMore = result.rows.length > limit;
   const runs = hasMore ? result.rows.slice(0, limit) : result.rows;

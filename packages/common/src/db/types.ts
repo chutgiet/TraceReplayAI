@@ -38,6 +38,12 @@ export interface RunRow {
   updated_at: Date;
 }
 
+/** Extended run row returned by listRuns — includes computed event_count. */
+export interface RunListRow extends RunRow {
+  /** Number of events belonging to this run (from COUNT subquery; pg returns bigint as string). */
+  event_count: string;
+}
+
 // Subset for INSERT — omits DB-defaulted columns
 export interface InsertRunRow {
   id: string;

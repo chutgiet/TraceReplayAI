@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { fetchRunTimeline } from '@/lib/api';
+import { ReplayTimelineView } from '@/components/timeline';
 
 export default function TimelinePage() {
   const params = useParams<{ runId: string }>();
@@ -30,6 +31,8 @@ export default function TimelinePage() {
     );
   }
 
+  if (!data) return null;
+
   return (
     <div className="space-y-4">
       <div>
@@ -39,17 +42,7 @@ export default function TimelinePage() {
         </p>
       </div>
 
-      {/* Timeline data is available — ready for F3-004 implementation */}
-      <div className="rounded-lg border border-[var(--color-border)] p-8 text-center">
-        <p className="text-sm text-[var(--color-text-muted)]">
-          Timeline visualization will be implemented in F3-004.
-        </p>
-        {data && (
-          <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-            Timeline data loaded successfully.
-          </p>
-        )}
-      </div>
+      <ReplayTimelineView timeline={data.data} />
     </div>
   );
 }

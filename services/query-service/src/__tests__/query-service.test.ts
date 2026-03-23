@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { RunRow, EventRow, ListRunsResult } from '@tracereplay/common';
+import type { RunRow, EventRow, ListRunsResult, RunListRow } from '@tracereplay/common';
 import { buildApp } from '../index.js';
 
 // ---------------------------------------------------------------------------
@@ -10,7 +10,7 @@ const VALID_UUID = '550e8400-e29b-41d4-a716-446655440000';
 const VALID_UUID_2 = '660e8400-e29b-41d4-a716-446655440001';
 const NOW = new Date('2026-03-15T10:00:00.000Z');
 
-function makeRunRow(overrides: Partial<RunRow> = {}): RunRow {
+function makeRunRow(overrides: Partial<RunRow> = {}): RunListRow {
   return {
     id: VALID_UUID,
     tenant_id: 'tenant-abc',
@@ -26,8 +26,9 @@ function makeRunRow(overrides: Partial<RunRow> = {}): RunRow {
     schema_version: '1.0.0',
     created_at: NOW,
     updated_at: NOW,
+    event_count: '5',
     ...overrides,
-  };
+  } as RunListRow;
 }
 
 function makeEventRow(overrides: Partial<EventRow> = {}): EventRow {
@@ -46,6 +47,7 @@ function makeEventRow(overrides: Partial<EventRow> = {}): EventRow {
     schema_version: '1.0.0',
     timestamp: NOW,
     received_at: NOW,
+    ingestion_order: 1,
     ...overrides,
   };
 }
@@ -54,9 +56,9 @@ function makeEventRow(overrides: Partial<EventRow> = {}): EventRow {
 // Mock the DB layer
 // ---------------------------------------------------------------------------
 
-const mockListRuns = vi.fn<() => Promise<ListRunsResult>>();
-const mockGetRunById = vi.fn<() => Promise<RunRow | null>>();
-const mockGetEventsByRunId = vi.fn<() => Promise<EventRow[]>>();
+const mockListRuns = vi.fn<(...args: unknown[]) => Promise<ListRunsResult>>();
+const mockGetRunById = vi.fn<(...args: unknown[]) => Promise<RunRow | null>>();
+const mockGetEventsByRunId = vi.fn<(...args: unknown[]) => Promise<EventRow[]>>();
 
 vi.mock('@tracereplay/common', () => ({
   listRuns: (...args: unknown[]) => mockListRuns(...args),
@@ -111,6 +113,7 @@ describe('GET /v1/runs', () => {
     expect(body.data[0].status).toBe('success');
     expect(body.data[0].startedAt).toBe('2026-03-15T10:00:00.000Z');
     expect(body.data[0].endedAt).toBe('2026-03-15T10:05:00.000Z');
+    expect(body.data[0].eventCount).toBe(5);
   });
 
   it('passes filter parameters to listRuns', async () => {

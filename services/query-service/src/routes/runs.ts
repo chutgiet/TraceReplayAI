@@ -5,7 +5,7 @@ import {
   getRunById,
   getEventsByRunId,
 } from '@tracereplay/common';
-import type { ListRunsFilter, CursorPage, RunRow } from '@tracereplay/common';
+import type { ListRunsFilter, CursorPage, RunRow, RunListRow } from '@tracereplay/common';
 
 // ---------------------------------------------------------------------------
 // Zod schemas for query-string validation
@@ -29,8 +29,8 @@ const runIdParamSchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatRunResponse(run: RunRow): Record<string, unknown> {
-  return {
+function formatRunResponse(run: RunRow | RunListRow): Record<string, unknown> {
+  const base: Record<string, unknown> = {
     id: run.id,
     tenantId: run.tenant_id,
     agentId: run.agent_id,
@@ -46,6 +46,12 @@ function formatRunResponse(run: RunRow): Record<string, unknown> {
     createdAt: run.created_at.toISOString(),
     updatedAt: run.updated_at.toISOString(),
   };
+
+  if ('event_count' in run) {
+    base.eventCount = parseInt(String(run.event_count), 10);
+  }
+
+  return base;
 }
 
 function computeRunSummary(run: RunRow, eventCount: number): Record<string, unknown> {
