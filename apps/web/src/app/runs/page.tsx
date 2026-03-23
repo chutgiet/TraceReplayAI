@@ -1,26 +1,117 @@
 'use client';
 
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchRuns, type Run, type RunListParams } from '@/lib/api';
-import { cn, formatTimestamp, formatDuration, statusColor } from '@/lib/utils';
+import { formatDuration } from '@/lib/utils';
 import { RunFilters } from '@/components/run-filters';
 import { useState } from 'react';
+import {
+  DataTable,
+  StatusBadge,
+  EmptyState,
+  Skeleton,
+  TimeDisplay,
+  type ColumnDef,
+  type RunStatus,
+} from '@tracereplay/ui';
+
+const PAGE_SIZE = 20;
+
+const columns: ColumnDef<Run>[] = [
+  {
+    key: 'id',
+    header: 'Run ID',
+    render: (run) => (
+      <Link
+        href={`/runs/${run.id}`}
+        className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400"
+      >
+        {run.id.slice(0, 8)}…
+      </Link>
+    ),
+  },
+  {
+    key: 'agentId',
+    header: 'Agent',
+    sortable: true,
+    render: (run) => (
+      <span className="text-sm text-[var(--color-text-secondary)]">
+        {run.agentId}
+      </span>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    sortable: true,
+    render: (run) => <StatusBadge status={run.status as RunStatus} />,
+  },
+  {
+    key: 'startedAt',
+    header: 'Started',
+    sortable: true,
+    render: (run) => (
+      <TimeDisplay
+        timestamp={run.startedAt}
+        format="short"
+        className="text-xs text-[var(--color-text-secondary)]"
+      />
+    ),
+  },
+  {
+    key: 'duration',
+    header: 'Duration',
+    render: (run) => {
+      const durationMs =
+        run.endedAt && run.startedAt
+          ? new Date(run.endedAt).getTime() - new Date(run.startedAt).getTime()
+          : null;
+      return (
+        <span className="font-mono text-xs text-[var(--color-text-muted)]">
+          {formatDuration(durationMs)}
+        </span>
+      );
+    },
+  },
+  {
+    key: 'eventCount',
+    header: 'Events',
+    sortable: true,
+    render: (run) => (
+      <span className="font-mono text-xs text-[var(--color-text-secondary)]">
+        {run.eventCount != null ? run.eventCount : '—'}
+      </span>
+    ),
+  },
+];
 
 export default function RunsPage() {
   const [filters, setFilters] = useState<RunListParams>({});
 
-  const { data, isLoading, error } = useQuery({
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ['runs', filters],
-    queryFn: () => fetchRuns(filters),
+    queryFn: ({ pageParam }) =>
+      fetchRuns({ ...filters, cursor: pageParam, limit: PAGE_SIZE }),
+    getNextPageParam: (lastPage) => lastPage.meta.nextCursor ?? undefined,
+    initialPageParam: undefined as string | undefined,
   });
+
+  const allRuns = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Runs</h1>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          Browse agent execution runs
+          Browse and filter agent execution runs
         </p>
       </div>
 
@@ -39,100 +130,38 @@ export default function RunsPage() {
         </div>
       )}
 
-      {data && data.data.length === 0 && (
-        <div className="rounded-lg border border-[var(--color-border)] p-12 text-center">
-          <p className="text-sm font-medium text-[var(--color-text-secondary)]">
-            No runs found
-          </p>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            Adjust your filters or ingest some events to get started.
-          </p>
-        </div>
+      {!isLoading && !error && allRuns.length === 0 && (
+        <EmptyState
+          title="No runs found"
+          description="Adjust your filters or ingest some events to get started."
+          className="rounded-lg border border-[var(--color-border)] p-12"
+        />
       )}
 
-      {data && data.data.length > 0 && (
-        <RunsTable runs={data.data} nextCursor={data.meta.nextCursor} onLoadMore={(cursor) => setFilters((prev) => ({ ...prev, cursor }))} />
-      )}
-    </div>
-  );
-}
-
-function RunsTable({
-  runs,
-  nextCursor,
-  onLoadMore,
-}: {
-  runs: Run[];
-  nextCursor?: string | null;
-  onLoadMore: (cursor: string) => void;
-}) {
-  return (
-    <div className="overflow-x-auto rounded-lg border border-[var(--color-border)]">
-      <table className="w-full text-left text-sm">
-        <thead className="border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]">
-          <tr>
-            <th className="px-4 py-3 font-medium">Run ID</th>
-            <th className="px-4 py-3 font-medium">Agent</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Started</th>
-            <th className="px-4 py-3 font-medium">Duration</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[var(--color-border)]">
-          {runs.map((run) => {
-            const colors = statusColor(run.status);
-            const durationMs =
-              run.endedAt && run.startedAt
-                ? new Date(run.endedAt).getTime() -
-                  new Date(run.startedAt).getTime()
-                : null;
-
-            return (
-              <tr
-                key={run.id}
-                className="transition-colors hover:bg-[var(--color-surface-raised)]"
+      {allRuns.length > 0 && (
+        <div className="rounded-lg border border-[var(--color-border)]">
+          <DataTable
+            columns={columns}
+            data={allRuns}
+            rowKey={(run) => run.id}
+            caption="Agent execution runs"
+            pagination={{
+              pageIndex: 0,
+              pageSize: allRuns.length,
+              totalItems: allRuns.length,
+            }}
+          />
+          {hasNextPage && (
+            <div className="border-t border-[var(--color-border)] p-3 text-center">
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 disabled:opacity-50 dark:text-brand-400"
               >
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/runs/${run.id}`}
-                    className="font-mono text-xs text-brand-600 hover:underline dark:text-brand-400"
-                  >
-                    {run.id.slice(0, 8)}…
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-[var(--color-text-secondary)]">
-                  {run.agentId}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-                      colors.bg,
-                      colors.text,
-                    )}
-                  >
-                    {run.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-xs text-[var(--color-text-secondary)]">
-                  {formatTimestamp(run.startedAt)}
-                </td>
-                <td className="px-4 py-3 font-mono text-xs text-[var(--color-text-muted)]">
-                  {formatDuration(durationMs)}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {nextCursor && (
-        <div className="border-t border-[var(--color-border)] p-3 text-center">
-          <button
-            onClick={() => onLoadMore(nextCursor)}
-            className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
-          >
-            Load more runs
-          </button>
+                {isFetchingNextPage ? 'Loading…' : 'Load more runs'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -143,18 +172,23 @@ function RunsTableSkeleton() {
   return (
     <div className="overflow-hidden rounded-lg border border-[var(--color-border)]">
       <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-raised)] px-4 py-3">
-        <div className="h-4 w-48 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
+        <div className="flex gap-8">
+          {['w-20', 'w-28', 'w-16', 'w-32', 'w-16', 'w-12'].map((w, i) => (
+            <Skeleton key={i} width={w} height="h-3" />
+          ))}
+        </div>
       </div>
-      {Array.from({ length: 5 }).map((_, i) => (
+      {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="flex gap-4 border-b border-[var(--color-border)] px-4 py-3 last:border-0"
+          className="flex gap-8 border-b border-[var(--color-border)] px-4 py-3 last:border-0"
         >
-          <div className="h-4 w-24 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-          <div className="h-4 w-32 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-          <div className="h-4 w-16 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-          <div className="h-4 w-40 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-          <div className="h-4 w-16 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
+          <Skeleton width="w-20" height="h-4" />
+          <Skeleton width="w-28" height="h-4" />
+          <Skeleton width="w-16" height="h-4" />
+          <Skeleton width="w-32" height="h-4" />
+          <Skeleton width="w-16" height="h-4" />
+          <Skeleton width="w-12" height="h-4" />
         </div>
       ))}
     </div>

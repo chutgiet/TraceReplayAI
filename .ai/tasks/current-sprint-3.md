@@ -14,7 +14,7 @@ Build the Investigation UI and supporting APIs so users can visually browse runs
 |----|------|--------|----------|-----|
 | F3-001 | Next.js app scaffold with Tailwind | ✅ | P0 | M |
 | F3-002 | Shared UI component library (`packages/ui`) | ✅ | P0 | M |
-| F3-003 | Run list page with filters | 🔲 | P0 | M |
+| F3-003 | Run list page with filters | ✅ | P0 | M |
 | F3-004 | Run detail / replay timeline view | 🔲 | P0 | L |
 | F3-005 | Event detail expandable panel | 🔲 | P1 | M |
 | F3-006 | Basic lineage graph visualization | 🔲 | P1 | L |

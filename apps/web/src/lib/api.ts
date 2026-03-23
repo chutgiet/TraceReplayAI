@@ -76,6 +76,7 @@ export interface Run {
   schemaVersion: string;
   createdAt: string;
   updatedAt: string;
+  eventCount?: number;
 }
 
 export interface RunListParams {
