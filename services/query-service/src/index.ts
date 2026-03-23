@@ -3,6 +3,7 @@ import { closePool } from '@tracereplay/common';
 import { runsRoutes } from './routes/runs.js';
 import { eventsRoutes } from './routes/events.js';
 import { timelineRoutes } from './routes/timeline.js';
+import { searchRoutes } from './routes/search.js';
 
 const PORT = Number(process.env['PORT'] ?? 3002);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
@@ -23,6 +24,7 @@ export async function buildApp() {
   await app.register(runsRoutes, { prefix: '/v1' });
   await app.register(eventsRoutes, { prefix: '/v1' });
   await app.register(timelineRoutes, { prefix: '/v1' });
+  await app.register(searchRoutes, { prefix: '/v1' });
 
   return app;
 }

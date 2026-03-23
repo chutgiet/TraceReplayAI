@@ -182,4 +182,56 @@ export async function fetchRunTimeline(runId: string) {
   return request<ReplayTimeline>(`/runs/${encodeURIComponent(runId)}/timeline`);
 }
 
+// ---------------------------------------------------------------------------
+// Search types
+// ---------------------------------------------------------------------------
+
+export interface SearchEvent extends RunEvent {
+  /** Relevance rank (higher = more relevant). */
+  rank: number;
+  /** Highlighted headline snippet with <mark> tags around matching terms. */
+  headline: string;
+}
+
+export interface SearchParams {
+  q: string;
+  tenantId?: string;
+  runId?: string;
+  eventTypes?: string[];
+  after?: string;
+  before?: string;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface SearchMeta {
+  requestId: string;
+  nextCursor?: string | null;
+  count?: number;
+  totalEstimate?: number;
+  query?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Search API
+// ---------------------------------------------------------------------------
+
+export async function searchEvents(params: SearchParams) {
+  const searchParams = new URLSearchParams();
+  searchParams.set('q', params.q);
+  if (params.tenantId) searchParams.set('tenantId', params.tenantId);
+  if (params.runId) searchParams.set('runId', params.runId);
+  if (params.eventTypes && params.eventTypes.length > 0)
+    searchParams.set('eventTypes', params.eventTypes.join(','));
+  if (params.after) searchParams.set('after', params.after);
+  if (params.before) searchParams.set('before', params.before);
+  if (params.cursor) searchParams.set('cursor', params.cursor);
+  if (params.limit) searchParams.set('limit', String(params.limit));
+
+  const qs = searchParams.toString();
+  return request<SearchEvent[]>(`/search?${qs}`) as Promise<
+    ApiResponse<SearchEvent[]> & { meta: SearchMeta }
+  >;
+}
+
 export { ApiClientError };
