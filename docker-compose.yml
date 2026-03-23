@@ -1,3 +1,16 @@
+# TraceReplay AI — Full Local Stack
+# Usage:
+#   docker compose up              # start all services (builds if needed)
+#   docker compose up --build      # force rebuild all images
+#   docker compose up -d           # start detached
+#   docker compose down            # stop & remove containers
+#   docker compose down -v         # also remove volumes (reset DB)
+#   docker compose logs -f web     # follow logs for a specific service
+
+# ---------------------------------------------------------------------------
+# Infrastructure
+# ---------------------------------------------------------------------------
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -29,6 +42,142 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Backend services
+  # ---------------------------------------------------------------------------
+
+  ingest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "services/ingest-api/dist/index.js"]
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://tracereplay:tracereplay@postgres:5432/tracereplay
+      LOG_LEVEL: info
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  query-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "services/query-service/dist/index.js"]
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://tracereplay:tracereplay@postgres:5432/tracereplay
+      LOG_LEVEL: info
+      NODE_ENV: production
+      REDACTION_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3002/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  normalizer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "services/normalizer/dist/index.js"]
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://tracereplay:tracereplay@postgres:5432/tracereplay
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKER_CONCURRENCY: 5
+      LOG_LEVEL: info
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3003/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "services/worker/dist/index.js"]
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://tracereplay:tracereplay@postgres:5432/tracereplay
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKER_NORMALIZATION_CONCURRENCY: 5
+      LOG_LEVEL: info
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3004/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Frontend
+  # ---------------------------------------------------------------------------
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "3000:3000"
+    environment:
+      QUERY_SERVICE_URL: http://query-service:3002
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: 1
+    depends_on:
+      query-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
 
 volumes:
   postgres_data:

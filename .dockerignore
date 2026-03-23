@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+.next
+**/.next
+out
+**/out
+
+# Coverage & test artifacts
+coverage
+**/coverage
+.vitest
+**/.vitest
+
+# Version control
+.git
+.gitignore
+
+# Environment files (secrets)
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Documentation and AI context (not needed in image)
+docs
+.ai
+.github
+examples
+tests
+
+# Misc
+*.md
+!README.md
+LICENSE
+CODEOWNERS

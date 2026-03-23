@@ -1,0 +1,66 @@
+# ── Stage 1: Install dependencies ─────────────────────────────────────────────
+FROM node:20-alpine AS deps
+
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+WORKDIR /app
+
+# Copy workspace manifests first for layer caching
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json tsconfig.json turbo.json ./
+COPY packages/event-schema/package.json packages/event-schema/
+COPY packages/common/package.json packages/common/
+COPY packages/connectors-core/package.json packages/connectors-core/
+COPY packages/redaction/package.json packages/redaction/
+COPY packages/replay-engine/package.json packages/replay-engine/
+COPY packages/graph-model/package.json packages/graph-model/
+COPY packages/sdk-typescript/package.json packages/sdk-typescript/
+COPY packages/ui/package.json packages/ui/
+COPY services/ingest-api/package.json services/ingest-api/
+COPY services/normalizer/package.json services/normalizer/
+COPY services/query-service/package.json services/query-service/
+COPY services/worker/package.json services/worker/
+COPY apps/web/package.json apps/web/
+COPY tests/package.json tests/
+
+RUN pnpm install --frozen-lockfile
+
+# ── Stage 2: Build all packages & the Next.js app ────────────────────────────
+FROM node:20-alpine AS build
+
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Restore full workspace links
+RUN pnpm install --frozen-lockfile --offline
+
+# Build shared packages first, then the web app
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN pnpm build
+
+# ── Stage 3: Production Next.js runner ────────────────────────────────────────
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy the standalone Next.js output + static assets
+COPY --from=build /app/apps/web/.next ./.next
+COPY --from=build /app/apps/web/public ./public
+COPY --from=build /app/apps/web/package.json ./package.json
+COPY --from=build /app/apps/web/next.config.mjs ./next.config.mjs
+COPY --from=build /app/apps/web/node_modules ./node_modules
+
+# Also copy workspace packages that Next.js transpiles at runtime
+COPY --from=build /app/packages/ui ./node_modules/@tracereplay/ui
+COPY --from=build /app/packages/event-schema ./node_modules/@tracereplay/event-schema
+COPY --from=build /app/packages/graph-model ./node_modules/@tracereplay/graph-model
+
+EXPOSE 3000
+
+CMD ["npx", "next", "start", "--port", "3000"]
