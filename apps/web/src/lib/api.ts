@@ -106,6 +106,52 @@ export interface RunEvent {
 }
 
 // ---------------------------------------------------------------------------
+// Timeline types (mirroring replay-engine output)
+// ---------------------------------------------------------------------------
+
+export interface TimelineEntry {
+  event: RunEvent;
+  index: number;
+  depth: number;
+  childEventIds: string[];
+  durationMs?: number;
+}
+
+export type TimelineGapType =
+  | 'missing_run_start'
+  | 'missing_run_end'
+  | 'orphan_tool_end'
+  | 'unclosed_tool_call'
+  | 'unclosed_approval';
+
+export interface TimelineGap {
+  type: TimelineGapType;
+  message: string;
+  relatedEventIds: string[];
+  detectedAtIndex?: number;
+}
+
+export interface RunSummary {
+  runId: string;
+  tenantId: string;
+  eventCount: number;
+  eventTypeCounts: Record<string, number>;
+  startTime?: string;
+  endTime?: string;
+  durationMs?: number;
+  status?: 'success' | 'failure' | 'timeout' | 'cancelled';
+  hasGaps: boolean;
+  toolCount: number;
+  hasErrors: boolean;
+}
+
+export interface ReplayTimeline {
+  entries: TimelineEntry[];
+  gaps: TimelineGap[];
+  summary: RunSummary;
+}
+
+// ---------------------------------------------------------------------------
 // API functions
 // ---------------------------------------------------------------------------
 
@@ -133,7 +179,7 @@ export async function fetchRunEvents(runId: string) {
 }
 
 export async function fetchRunTimeline(runId: string) {
-  return request<unknown>(`/runs/${encodeURIComponent(runId)}/timeline`);
+  return request<ReplayTimeline>(`/runs/${encodeURIComponent(runId)}/timeline`);
 }
 
 export { ApiClientError };
