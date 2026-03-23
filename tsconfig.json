@@ -5,8 +5,12 @@
     { "path": "packages/event-schema" },
     { "path": "packages/common" },
     { "path": "packages/replay-engine" },
+    { "path": "packages/graph-model" },
+    { "path": "packages/connectors-core" },
+    { "path": "packages/sdk-typescript" },
     { "path": "services/ingest-api" },
     { "path": "services/worker" },
-    { "path": "services/query-service" }
+    { "path": "services/query-service" },
+    { "path": "apps/web" }
   ]
 }

@@ -13,18 +13,23 @@
 - [x] Fixture suite: 5 canonical event sequences with Zod-validated loader
 - [x] Test coverage: 68 unit tests, 67 fixture tests, 13 integration tests
 
-## Milestone 2: Normalization + SDK (Current)
+## Milestone 2: Normalization + SDK (Complete ✅)
 > Goal: Accept telemetry from real agent frameworks
 
-- [ ] `normalizer` service: map raw telemetry → canonical events
-- [ ] `sdk-typescript` package: lightweight ingestion client
-- [ ] Adapter: OpenAI Agents SDK telemetry
-- [ ] Adapter: LangGraph/LangChain telemetry
-- [ ] Idempotent ingestion (dedup by event ID)
-- [ ] Out-of-order event handling
-- [ ] Worker service for async normalization
+- [x] `normalizer` service: map raw telemetry → canonical events
+- [x] `sdk-typescript` package: lightweight ingestion client
+- [x] Adapter: OpenAI Agents SDK telemetry (41 tests)
+- [x] Adapter: GitHub Copilot telemetry (22 tests)
+- [x] Adapter: Anthropic Claude Code telemetry (28 tests)
+- [x] Idempotent ingestion (dedup by event ID)
+- [x] Out-of-order event handling + ADR
+- [x] Worker service for async normalization (BullMQ)
+- [x] Query service: runs, events, timeline APIs
+- [x] Lineage graph model: types, builder, queries, serialization (97 tests)
+- [x] Integration test: SDK → ingest → query → replay
+- [x] 417 unit/fixture tests passing across all packages
 
-## Milestone 3: Investigation UI
+## Milestone 3: Investigation UI (Current)
 > Goal: Visual replay and basic investigation
 
 - [ ] `apps/web`: Next.js scaffold with Tailwind

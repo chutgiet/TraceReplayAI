@@ -14,7 +14,7 @@
 - [x] Basic replay engine: ordered timeline from events
 - [x] Causal replay: parent-child event linking
 - [x] Gap detection: identify missing spans in a run
-- [ ] Lineage graph model: run → events → side effects
+- [x] Lineage graph model: run → events → side effects
 - [ ] Sub-agent run linking
 
 ### SDK

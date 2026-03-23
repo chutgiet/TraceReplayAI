@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-surface: #ffffff;
+    --color-surface-raised: #f9fafb;
+    --color-surface-overlay: #f3f4f6;
+    --color-border: #e5e7eb;
+    --color-text-primary: #111827;
+    --color-text-secondary: #6b7280;
+    --color-text-muted: #9ca3af;
+  }
+
+  .dark {
+    --color-surface: #0f172a;
+    --color-surface-raised: #1e293b;
+    --color-surface-overlay: #334155;
+    --color-border: #334155;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+  }
+
+  body {
+    @apply bg-[var(--color-surface)] text-[var(--color-text-primary)] antialiased;
+  }
+}
+
+@layer components {
+  /* Event type color coding */
+  .event-prompt {
+    @apply border-blue-500 bg-blue-50 dark:bg-blue-950;
+  }
+  .event-tool-call {
+    @apply border-green-500 bg-green-50 dark:bg-green-950;
+  }
+  .event-error {
+    @apply border-red-500 bg-red-50 dark:bg-red-950;
+  }
+  .event-side-effect {
+    @apply border-amber-500 bg-amber-50 dark:bg-amber-950;
+  }
+  .event-approval {
+    @apply border-purple-500 bg-purple-50 dark:bg-purple-950;
+  }
+  .event-context {
+    @apply border-cyan-500 bg-cyan-50 dark:bg-cyan-950;
+  }
+  .event-model {
+    @apply border-indigo-500 bg-indigo-50 dark:bg-indigo-950;
+  }
+  .event-policy {
+    @apply border-orange-500 bg-orange-50 dark:bg-orange-950;
+  }
+  .event-run {
+    @apply border-slate-500 bg-slate-50 dark:bg-slate-950;
+  }
+}
