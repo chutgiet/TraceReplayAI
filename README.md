@@ -49,13 +49,47 @@ pnpm test -- --watch
 pnpm typecheck
 ```
 
-### Running the Web UI locally
+### Full stack with Docker Compose
 
-The investigation UI requires the infrastructure containers (PostgreSQL + Redis), the query-service backend, and the Next.js dev server.
+Start **everything** — PostgreSQL, Redis, all backend services, and the web UI — with a single command:
+
+```bash
+# Production-like stack
+docker compose up --build
+
+# Or with hot-reload for development
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Convenience scripts are also available:
+
+```bash
+pnpm docker:up       # build & start all services
+pnpm docker:dev      # build & start with hot-reload
+pnpm docker:down     # stop all containers
+pnpm docker:logs     # follow logs for all services
+pnpm docker:reset    # destroy volumes (reset DB) and rebuild
+```
+
+| Service | URL | Description |
+|---|---|---|
+| Web UI | http://localhost:3000 | Next.js investigation & replay UI |
+| Ingest API | http://localhost:3001 | `POST /v1/events`, `POST /v1/events/batch` |
+| Query Service | http://localhost:3002 | `GET /v1/runs`, `/v1/events`, `/v1/search` |
+| Normalizer | http://localhost:3003 | BullMQ worker (health: `/healthz`) |
+| Worker | http://localhost:3004 | Async job runner (health: `/healthz`) |
+| PostgreSQL | localhost:5432 | Event store (user: `tracereplay`) |
+| Redis | localhost:6379 | Job queue |
+
+See [docs/runbooks/local-dev.md](docs/runbooks/local-dev.md) for full setup documentation, troubleshooting, and common operations.
+
+### Running individual services locally
+
+For working on a specific service without Docker, start just the infrastructure containers and run services manually:
 
 ```bash
 # 1. Start infrastructure (PostgreSQL + Redis)
-docker compose up -d
+docker compose up -d postgres redis
 
 # 2. Set up environment variables (first time only)
 cp .env.template .env
@@ -73,13 +107,6 @@ cd apps/web && pnpm dev
 # 6. Open the UI
 open http://localhost:3000
 ```
-
-| Service | URL | Description |
-|---|---|---|
-| Web UI | http://localhost:3000 | Next.js investigation & replay UI |
-| Query Service | http://localhost:3002 | Fastify API (healthcheck: `/healthz`) |
-| PostgreSQL | localhost:5432 | Event store (user: `tracereplay`) |
-| Redis | localhost:6379 | Job queue |
 
 To stop everything:
 

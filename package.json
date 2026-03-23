@@ -19,7 +19,13 @@
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean",
     "format": "prettier --write .",
-    "db:migrate": "tsx scripts/db-migrate.ts"
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "docker:up": "docker compose up --build",
+    "docker:up:detach": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
+    "docker:reset": "docker compose down -v && docker compose up --build",
+    "docker:logs": "docker compose logs -f"
   },
   "devDependencies": {
     "@types/pg": "^8.11.0",

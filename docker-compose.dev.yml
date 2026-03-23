@@ -1,0 +1,72 @@
+# TraceReplay AI — Development Overrides
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Adds volume mounts for hot-reload and uses tsx watch instead of compiled JS.
+# Infrastructure services (postgres, redis) remain unchanged.
+
+services:
+  ingest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    command: ["npx", "tsx", "watch", "services/ingest-api/src/index.ts"]
+    volumes:
+      - ./packages:/app/packages:ro
+      - ./services/ingest-api/src:/app/services/ingest-api/src:ro
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+
+  query-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    command: ["npx", "tsx", "watch", "services/query-service/src/index.ts"]
+    volumes:
+      - ./packages:/app/packages:ro
+      - ./services/query-service/src:/app/services/query-service/src:ro
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+
+  normalizer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    command: ["npx", "tsx", "watch", "services/normalizer/src/index.ts"]
+    volumes:
+      - ./packages:/app/packages:ro
+      - ./services/normalizer/src:/app/services/normalizer/src:ro
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    command: ["npx", "tsx", "watch", "services/worker/src/index.ts"]
+    volumes:
+      - ./packages:/app/packages:ro
+      - ./services/worker/src:/app/services/worker/src:ro
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      target: build
+    command: ["npx", "next", "dev", "--port", "3000"]
+    working_dir: /app/apps/web
+    volumes:
+      - ./apps/web/src:/app/apps/web/src:ro
+      - ./packages/ui/src:/app/packages/ui/src:ro
+    environment:
+      NODE_ENV: development
