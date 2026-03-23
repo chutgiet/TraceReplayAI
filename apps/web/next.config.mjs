@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // Transpile internal workspace packages
+  transpilePackages: ['@tracereplay/ui'],
+
   // Proxy API requests to the query-service backend
   async rewrites() {
     const queryServiceUrl =
