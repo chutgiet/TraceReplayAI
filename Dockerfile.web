@@ -39,7 +39,9 @@ COPY . .
 
 # Build shared packages first, then the web app
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm build
+ARG QUERY_SERVICE_URL=http://query-service:3002
+ENV QUERY_SERVICE_URL=${QUERY_SERVICE_URL}
+RUN rm -rf node_modules/.cache/turbo apps/web/.next && pnpm build
 
 # ── Stage 3: Production Next.js runner ────────────────────────────────────────
 FROM node:20-alpine AS runner

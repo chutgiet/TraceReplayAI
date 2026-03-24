@@ -166,6 +166,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+      args:
+        QUERY_SERVICE_URL: http://query-service:3002
     ports:
       - "3000:3000"
     environment:
