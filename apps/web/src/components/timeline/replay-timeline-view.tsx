@@ -8,7 +8,7 @@ import { TimelineEntryRow } from './timeline-entry-row';
 import { TimelineGapMarker } from './timeline-gap-marker';
 import { EventDetailPanel } from './event-detail-panel';
 import { computeMaxDuration } from './timeline-duration-bar';
-import { EmptyState } from '@tracereplay/ui';
+import { TimelineEmptyState } from '@/components/states';
 
 export interface ReplayTimelineViewProps {
   timeline: ReplayTimelineData;
@@ -75,12 +75,7 @@ export function ReplayTimelineView({
   }, []);
 
   if (entries.length === 0) {
-    return (
-      <EmptyState
-        title="No events in timeline"
-        description="This run has no recorded events to display."
-      />
-    );
+    return <TimelineEmptyState />;
   }
 
   return (

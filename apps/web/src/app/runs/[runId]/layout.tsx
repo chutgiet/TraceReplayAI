@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchRun } from '@/lib/api';
 import { cn, formatTimestamp, formatDuration, statusColor } from '@/lib/utils';
 import { RunDetailTabs } from '@/components/run-detail-tabs';
+import { RunDetailSkeleton, ErrorState } from '@/components/states';
 
 export default function RunDetailLayout({
   children,
@@ -15,7 +16,7 @@ export default function RunDetailLayout({
   const params = useParams<{ runId: string }>();
   const runId = params.runId;
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['run', runId],
     queryFn: () => fetchRun(runId),
   });
@@ -26,19 +27,20 @@ export default function RunDetailLayout({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-950">
-        <p className="text-sm font-medium text-red-800 dark:text-red-200">
-          Failed to load run
-        </p>
-        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-          {error instanceof Error ? error.message : 'Unknown error'}
-        </p>
-        <Link
-          href="/runs"
-          className="mt-3 inline-block text-sm text-brand-600 hover:underline dark:text-brand-400"
-        >
-          Back to runs
-        </Link>
+      <div className="space-y-4">
+        <ErrorState
+          title="Failed to load run"
+          error={error}
+          onRetry={() => void refetch()}
+        />
+        <div className="text-center">
+          <Link
+            href="/runs"
+            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+          >
+            ← Back to all runs
+          </Link>
+        </div>
       </div>
     );
   }
@@ -114,22 +116,4 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function RunDetailSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="h-4 w-32 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-      <div className="rounded-lg border border-[var(--color-border)] p-6">
-        <div className="h-6 w-72 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-        <div className="mt-2 h-4 w-48 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-        <div className="mt-6 grid grid-cols-4 gap-4 border-t border-[var(--color-border)] pt-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i}>
-              <div className="h-3 w-12 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-              <div className="mt-1 h-4 w-20 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+
