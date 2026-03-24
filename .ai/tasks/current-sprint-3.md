@@ -47,10 +47,10 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `apps/web/`, `apps/web/app/layout.tsx`, `apps/web/app/runs/page.tsx`
 
 **Acceptance criteria:**
-- [ ] Next.js app starts and renders layout
-- [ ] Tailwind styles working
-- [ ] Route structure in place with placeholder pages
-- [ ] Can fetch from query-service (mocked or real)
+- [x] Next.js app starts and renders layout
+- [x] Tailwind styles working
+- [x] Route structure in place with placeholder pages
+- [x] Can fetch from query-service (mocked or real)
 
 ---
 
@@ -67,10 +67,10 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `packages/ui/src/components/`, `packages/ui/src/index.ts`
 
 **Acceptance criteria:**
-- [ ] Components exported from `@tracereplay/ui`
-- [ ] Components render correctly with Tailwind
-- [ ] DataTable supports sorting and pagination props
-- [ ] JsonViewer renders nested JSON with expand/collapse
+- [x] Components exported from `@tracereplay/ui`
+- [x] Components render correctly with Tailwind
+- [x] DataTable supports sorting and pagination props
+- [x] JsonViewer renders nested JSON with expand/collapse
 
 ---
 
@@ -88,10 +88,10 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `apps/web/app/runs/page.tsx`, `apps/web/lib/api.ts`
 
 **Acceptance criteria:**
-- [ ] Runs displayed in a table with all columns
-- [ ] Filters update the query and refresh results
-- [ ] Pagination works (cursor-based)
-- [ ] Empty state when no runs match
+- [x] Runs displayed in a table with all columns
+- [x] Filters update the query and refresh results
+- [x] Pagination works (cursor-based)
+- [x] Empty state when no runs match
 
 ---
 
@@ -110,11 +110,11 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `apps/web/app/runs/[runId]/page.tsx`, `apps/web/components/timeline/`
 
 **Acceptance criteria:**
-- [ ] Timeline renders entries in chronological order
-- [ ] Duration bars are proportional
-- [ ] Gaps are visually indicated
-- [ ] Run summary displays correctly
-- [ ] Event click opens detail panel
+- [x] Timeline renders entries in chronological order
+- [x] Duration bars are proportional
+- [x] Gaps are visually indicated
+- [x] Run summary displays correctly
+- [x] Event click opens detail panel
 
 ---
 
@@ -132,10 +132,10 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `apps/web/components/event-detail-panel.tsx`
 
 **Acceptance criteria:**
-- [ ] Panel opens with full event data
-- [ ] JsonViewer renders nested payloads
-- [ ] Redacted fields clearly marked
-- [ ] Copy buttons work
+- [x] Panel opens with full event data
+- [x] JsonViewer renders nested payloads
+- [x] Redacted fields clearly marked
+- [x] Copy buttons work
 
 ---
 
@@ -154,11 +154,11 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `apps/web/app/runs/[runId]/lineage/page.tsx`, `apps/web/components/lineage/`
 
 **Acceptance criteria:**
-- [ ] Graph renders nodes and edges from lineage model
-- [ ] Nodes are color-coded by type
-- [ ] Edge types are visually distinct
-- [ ] Click opens event detail
-- [ ] Zoom/pan controls work
+- [x] Graph renders nodes and edges from lineage model
+- [x] Nodes are color-coded by type
+- [x] Edge types are visually distinct
+- [x] Click opens event detail
+- [x] Zoom/pan controls work
 
 ---
 
@@ -175,11 +175,11 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `services/query-service/src/routes/events.ts`
 
 **Acceptance criteria:**
-- [ ] Endpoint returns single event by ID
-- [ ] Redaction rules applied to response
-- [ ] `redacted_fields` metadata included in response
-- [ ] 404 for unknown eventId
-- [ ] Unit tests
+- [x] Endpoint returns single event by ID
+- [x] Redaction rules applied to response
+- [x] `redacted_fields` metadata included in response
+- [x] 404 for unknown eventId
+- [x] Unit tests
 
 ---
 
@@ -197,11 +197,11 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `packages/redaction/src/types.ts`, `packages/redaction/src/engine.ts`, `packages/redaction/src/rules.ts`
 
 **Acceptance criteria:**
-- [ ] RedactionEngine applies rules to event payloads
-- [ ] Mask/remove/hash actions all work
-- [ ] Built-in PII detection rules
-- [ ] Audit trail returned per redaction
-- [ ] Unit tests with >80% coverage
+- [x] RedactionEngine applies rules to event payloads
+- [x] Mask/remove/hash actions all work
+- [x] Built-in PII detection rules
+- [x] Audit trail returned per redaction
+- [x] Unit tests with >80% coverage
 
 ---
 
@@ -219,11 +219,11 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `services/query-service/src/routes/search.ts`, `infrastructure/db/migrations/003_add_search_index.sql`
 
 **Acceptance criteria:**
-- [ ] Search endpoint returns matching events
-- [ ] Results include run context (runId, agentId)
-- [ ] GIN index migration applied
-- [ ] Handles special characters safely (SQL injection prevented)
-- [ ] Unit tests
+- [x] Search endpoint returns matching events
+- [x] Results include run context (runId, agentId)
+- [x] GIN index migration applied
+- [x] Handles special characters safely (SQL injection prevented)
+- [x] Unit tests
 
 ---
 
@@ -241,11 +241,11 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `docker-compose.yml` (update existing), `docs/runbooks/local-dev.md`
 
 **Acceptance criteria:**
-- [ ] `docker compose up` starts all services
-- [ ] Services can communicate (ingest → normalize → query)
-- [ ] Frontend accessible at localhost:3000
-- [ ] Hot-reload works for development
-- [ ] README documents setup steps
+- [x] `docker compose up` starts all services
+- [x] Services can communicate (ingest → normalize → query)
+- [x] Frontend accessible at localhost:3000
+- [x] Hot-reload works for development
+- [x] README documents setup steps
 
 ---
 
@@ -262,10 +262,10 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `apps/web/components/states/`, `apps/web/app/not-found.tsx`
 
 **Acceptance criteria:**
-- [ ] Loading states shown while data fetches
-- [ ] Empty states with helpful messaging
-- [ ] Error boundary catches and displays errors
-- [ ] 404 page for missing resources
+- [x] Loading states shown while data fetches
+- [x] Empty states with helpful messaging
+- [x] Error boundary catches and displays errors
+- [x] 404 page for missing resources
 
 ---
 
@@ -282,11 +282,11 @@ Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days
 **Key files:** `services/query-service/src/routes/runs.ts`, `packages/graph-model/src/graph-builder.ts`
 
 **Acceptance criteria:**
-- [ ] Parent-child run relationship stored and queryable
-- [ ] Run detail includes child runs
-- [ ] Timeline shows delegation points
-- [ ] Lineage graph connects across runs
-- [ ] Unit tests
+- [x] Parent-child run relationship stored and queryable
+- [x] Run detail includes child runs
+- [x] Timeline shows delegation points
+- [x] Lineage graph connects across runs
+- [x] Unit tests
 
 ---
 
@@ -316,12 +316,12 @@ F3-012 (Sub-agent linking) ←── independent (backend + graph-model)
 
 ## Sprint exit criteria
 
-- [ ] Next.js app renders run list from query-service data
-- [ ] Timeline view shows a run's events with duration bars and gaps
-- [ ] Event detail panel shows full event payload with redaction
-- [ ] Lineage graph renders nodes and edges for a run
-- [ ] Redaction engine applies configurable rules
-- [ ] Full-text search returns matching events
-- [ ] Docker Compose starts full local stack
-- [ ] All new code has unit test coverage > 80%
-- [ ] Empty/error/loading states handled in all views
+- [x] Next.js app renders run list from query-service data
+- [x] Timeline view shows a run's events with duration bars and gaps
+- [x] Event detail panel shows full event payload with redaction
+- [x] Lineage graph renders nodes and edges for a run
+- [x] Redaction engine applies configurable rules
+- [x] Full-text search returns matching events
+- [x] Docker Compose starts full local stack
+- [x] All new code has unit test coverage > 80%
+- [x] Empty/error/loading states handled in all views

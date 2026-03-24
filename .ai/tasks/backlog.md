@@ -15,7 +15,7 @@
 - [x] Causal replay: parent-child event linking
 - [x] Gap detection: identify missing spans in a run
 - [x] Lineage graph model: run → events → side effects
-- [ ] Sub-agent run linking
+- [x] Sub-agent run linking
 
 ### SDK
 - [x] TypeScript SDK: lightweight event client
@@ -31,24 +31,24 @@
 
 ### Investigation & Query
 - [x] Query service: list runs, filter by status/agent/time
-- [ ] Full-text search across event payloads
+- [x] Full-text search across event payloads
 - [x] Run timeline API for frontend consumption
-- [ ] Event detail API with redaction awareness
+- [x] Event detail API with redaction awareness
 
 ### Frontend
-- [ ] Next.js app scaffold
-- [ ] Run list page with filters
-- [ ] Run detail / replay timeline view
-- [ ] Event detail expandable panel
-- [ ] Basic lineage graph visualization
-- [ ] Shared UI component library
+- [x] Next.js app scaffold
+- [x] Run list page with filters
+- [x] Run detail / replay timeline view
+- [x] Event detail expandable panel
+- [x] Basic lineage graph visualization
+- [x] Shared UI component library
 
 ### Evidence & Compliance
 - [ ] Evidence bundle assembly from run data
 - [ ] JSON export format
 - [ ] PDF summary generation
 - [ ] Evidence integrity hash chain
-- [ ] Redaction engine with configurable rules
+- [x] Redaction engine with configurable rules
 
 ---
 
@@ -73,7 +73,7 @@
 - [ ] Health check endpoints on all services
 - [ ] Prometheus metrics export
 - [ ] Structured logging across all services
-- [ ] Docker Compose for full local stack
+- [x] Docker Compose for full local stack
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Deployment documentation
 

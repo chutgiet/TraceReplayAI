@@ -266,6 +266,9 @@ importers:
       '@tracereplay/event-schema':
         specifier: workspace:*
         version: link:../../packages/event-schema
+      bullmq:
+        specifier: ^5.0.0
+        version: 5.71.0
       fastify:
         specifier: ^5.0.0
         version: 5.8.2
