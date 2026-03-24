@@ -1,9 +1,23 @@
 import Fastify from 'fastify';
 import { closePool } from '@tracereplay/common';
+import type { ConnectionOptions } from 'bullmq';
 import { ingestRoutes } from './routes/ingest.js';
+import { rawEventsRoutes } from './routes/raw-events.js';
 
 const PORT = Number(process.env['PORT'] ?? 3001);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
+
+const REDIS_HOST = process.env['REDIS_HOST'] ?? 'localhost';
+const REDIS_PORT = Number(process.env['REDIS_PORT'] ?? 6379);
+const REDIS_PASSWORD = process.env['REDIS_PASSWORD'];
+
+function getRedisConnection(): ConnectionOptions {
+  return {
+    host: REDIS_HOST,
+    port: REDIS_PORT,
+    password: REDIS_PASSWORD,
+  };
+}
 
 export async function buildApp() {
   const app = Fastify({
@@ -19,6 +33,7 @@ export async function buildApp() {
 
   // Register routes
   await app.register(ingestRoutes, { prefix: '/v1' });
+  await app.register(rawEventsRoutes, { prefix: '/v1', redis: getRedisConnection() });
 
   return app;
 }

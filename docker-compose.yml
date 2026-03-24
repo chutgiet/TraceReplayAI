@@ -58,10 +58,14 @@ services:
       PORT: 3001
       HOST: 0.0.0.0
       DATABASE_URL: postgresql://tracereplay:tracereplay@postgres:5432/tracereplay
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       LOG_LEVEL: info
       NODE_ENV: production
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/healthz || exit 1"]
