@@ -586,6 +586,111 @@ describe('buildLineageGraph', () => {
       expect(graph.summary.hasDelegation).toBe(true);
       expect(graph.summary.runCount).toBe(2);
     });
+
+    it('creates delegation edges via relatedRunEvents option', () => {
+      const parentRunId = 'run-parent-rel' as RunId;
+      const childRunId = 'run-child-rel' as RunId;
+
+      const primaryEvents: TraceReplayEvent[] = [
+        makeEvent({
+          id: 'pr-start' as EventId,
+          runId: parentRunId,
+          type: 'run.start',
+          timestamp: '2026-03-15T10:00:00.000Z',
+          sequence: 1,
+          payload: { runName: 'parent-run' },
+        }),
+        makeEvent({
+          id: 'pr-end' as EventId,
+          runId: parentRunId,
+          type: 'run.end',
+          timestamp: '2026-03-15T10:00:05.000Z',
+          sequence: 2,
+          payload: { status: 'success' },
+        }),
+      ];
+
+      const relatedRunEvents: TraceReplayEvent[] = [
+        makeEvent({
+          id: 'cr-start' as EventId,
+          runId: childRunId,
+          type: 'run.start',
+          timestamp: '2026-03-15T10:00:01.000Z',
+          sequence: 1,
+          payload: { runName: 'child-run', parentRunId },
+        }),
+        makeEvent({
+          id: 'cr-end' as EventId,
+          runId: childRunId,
+          type: 'run.end',
+          timestamp: '2026-03-15T10:00:03.000Z',
+          sequence: 2,
+          payload: { status: 'success' },
+        }),
+      ];
+
+      const graph = buildLineageGraph(primaryEvents, { relatedRunEvents });
+
+      expect(graph.summary.runCount).toBe(2);
+      expect(graph.summary.hasDelegation).toBe(true);
+
+      const delegationEdges = Array.from(graph.edges.values()).filter(
+        (e) => e.type === 'delegation',
+      );
+      expect(delegationEdges.length).toBe(1);
+      expect(delegationEdges[0]!.source).toBe(`run:${parentRunId}`);
+      expect(delegationEdges[0]!.target).toBe(`run:${childRunId}`);
+    });
+
+    it('creates multiple delegation edges for multiple child runs', () => {
+      const parentRunId = 'run-multi-parent' as RunId;
+      const childRunId1 = 'run-multi-child-1' as RunId;
+      const childRunId2 = 'run-multi-child-2' as RunId;
+
+      const events: TraceReplayEvent[] = [
+        makeEvent({
+          id: 'mp-start' as EventId,
+          runId: parentRunId,
+          type: 'run.start',
+          timestamp: '2026-03-15T10:00:00.000Z',
+          sequence: 1,
+          payload: { runName: 'multi-parent' },
+        }),
+        makeEvent({
+          id: 'mc1-start' as EventId,
+          runId: childRunId1,
+          type: 'run.start',
+          timestamp: '2026-03-15T10:00:01.000Z',
+          sequence: 1,
+          payload: { runName: 'child-1', parentRunId },
+        }),
+        makeEvent({
+          id: 'mc2-start' as EventId,
+          runId: childRunId2,
+          type: 'run.start',
+          timestamp: '2026-03-15T10:00:02.000Z',
+          sequence: 1,
+          payload: { runName: 'child-2', parentRunId },
+        }),
+        makeEvent({
+          id: 'mp-end' as EventId,
+          runId: parentRunId,
+          type: 'run.end',
+          timestamp: '2026-03-15T10:00:05.000Z',
+          sequence: 2,
+          payload: { status: 'success' },
+        }),
+      ];
+
+      const graph = buildLineageGraph(events);
+
+      const delegationEdges = Array.from(graph.edges.values()).filter(
+        (e) => e.type === 'delegation',
+      );
+      expect(delegationEdges.length).toBe(2);
+      expect(graph.summary.hasDelegation).toBe(true);
+      expect(graph.summary.runCount).toBe(3);
+    });
   });
 
   // -----------------------------------------------------------------------

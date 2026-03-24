@@ -19,6 +19,7 @@ import { GraphControls } from './graph-controls';
 import { GraphLegend } from './graph-legend';
 import { GraphSummaryBar } from './graph-summary-bar';
 import { NodeDetailPanel } from './node-detail-panel';
+import { LineageEmptyState } from '@/components/states';
 import {
   useLineageGraph,
   DEFAULT_EDGE_VISIBILITY,
@@ -43,13 +44,15 @@ const edgeTypes: EdgeTypes = {
 
 export interface LineageGraphViewProps {
   events: RunEvent[];
+  /** Events from related runs (e.g. child sub-agent runs) for cross-run edges. */
+  relatedRunEvents?: RunEvent[];
 }
 
 // ---------------------------------------------------------------------------
 // Inner component (needs ReactFlowProvider context)
 // ---------------------------------------------------------------------------
 
-function LineageGraphViewInner({ events }: LineageGraphViewProps) {
+function LineageGraphViewInner({ events, relatedRunEvents }: LineageGraphViewProps) {
   const [edgeVisibility, setEdgeVisibility] = useState<EdgeVisibility>(
     DEFAULT_EDGE_VISIBILITY,
   );
@@ -59,6 +62,7 @@ function LineageGraphViewInner({ events }: LineageGraphViewProps) {
   const { nodes, edges, graph, isEmpty } = useLineageGraph(
     events,
     edgeVisibility,
+    relatedRunEvents ?? [],
   );
 
   const handleEdgeVisibilityChange = useCallback(
@@ -80,18 +84,7 @@ function LineageGraphViewInner({ events }: LineageGraphViewProps) {
   }, []);
 
   if (isEmpty) {
-    return (
-      <div className="flex h-96 items-center justify-center rounded-lg border border-[var(--color-border)]">
-        <div className="text-center">
-          <p className="text-sm text-[var(--color-text-muted)]">
-            No lineage data available for this run.
-          </p>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            Events may not have enough causal relationships to build a graph.
-          </p>
-        </div>
-      </div>
-    );
+    return <LineageEmptyState />;
   }
 
   return (

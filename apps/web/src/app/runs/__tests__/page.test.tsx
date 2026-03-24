@@ -118,12 +118,10 @@ describe('RunsPage', () => {
     renderWithProviders(<RunsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('No runs found')).toBeInTheDocument();
+      expect(screen.getByText('No runs yet')).toBeInTheDocument();
     });
     expect(
-      screen.getByText(
-        'Adjust your filters or ingest some events to get started.',
-      ),
+      screen.getByText(/will appear here once/i),
     ).toBeInTheDocument();
   });
 

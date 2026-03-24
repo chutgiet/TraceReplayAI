@@ -60,12 +60,16 @@ const mockListRuns = vi.fn<(...args: unknown[]) => Promise<ListRunsResult>>();
 const mockGetRunById = vi.fn<(...args: unknown[]) => Promise<RunRow | null>>();
 const mockGetEventById = vi.fn<(...args: unknown[]) => Promise<EventRow | null>>();
 const mockGetEventsByRunId = vi.fn<(...args: unknown[]) => Promise<EventRow[]>>();
+const mockGetChildRunsByParentId = vi.fn<(...args: unknown[]) => Promise<RunRow[]>>();
+const mockGetAncestryChain = vi.fn<(...args: unknown[]) => Promise<RunRow[]>>();
 
 vi.mock('@tracereplay/common', () => ({
   listRuns: (...args: unknown[]) => mockListRuns(...args),
   getRunById: (...args: unknown[]) => mockGetRunById(...args),
   getEventById: (...args: unknown[]) => mockGetEventById(...args),
   getEventsByRunId: (...args: unknown[]) => mockGetEventsByRunId(...args),
+  getChildRunsByParentId: (...args: unknown[]) => mockGetChildRunsByParentId(...args),
+  getAncestryChain: (...args: unknown[]) => mockGetAncestryChain(...args),
   closePool: vi.fn(),
 }));
 
@@ -242,6 +246,9 @@ describe('GET /v1/runs/:runId', () => {
   beforeEach(async () => {
     app = await buildApp();
     vi.clearAllMocks();
+    // Default: no child runs and no ancestry
+    mockGetChildRunsByParentId.mockResolvedValue([]);
+    mockGetAncestryChain.mockResolvedValue([]);
   });
 
   it('returns 200 with run details and summary', async () => {
@@ -431,6 +438,8 @@ describe('GET /v1/runs/:runId/timeline', () => {
   beforeEach(async () => {
     app = await buildApp();
     vi.clearAllMocks();
+    // Default: no child runs
+    mockGetChildRunsByParentId.mockResolvedValue([]);
   });
 
   const fakeTimeline = {
@@ -807,5 +816,262 @@ describe('GET /healthz', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ status: 'ok' });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sub-agent run linking — run detail includes child runs + parent
+// ---------------------------------------------------------------------------
+
+const CHILD_UUID = '990e8400-e29b-41d4-a716-446655440099';
+const PARENT_UUID = 'aa0e8400-e29b-41d4-a716-446655440088';
+
+describe('GET /v1/runs/:runId — sub-agent linking', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+
+  beforeEach(async () => {
+    app = await buildApp();
+    vi.clearAllMocks();
+    mockGetChildRunsByParentId.mockResolvedValue([]);
+    mockGetAncestryChain.mockResolvedValue([]);
+  });
+
+  it('returns childRuns when run has children', async () => {
+    const run = makeRunRow();
+    const childRun = makeRunRow({
+      id: CHILD_UUID,
+      agent_id: 'sub-agent-1',
+      run_name: 'child-task',
+      parent_run_id: VALID_UUID,
+    }) as RunRow;
+    mockGetRunById.mockResolvedValueOnce(run);
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+    mockGetChildRunsByParentId.mockResolvedValueOnce([childRun]);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.childRuns).toHaveLength(1);
+    expect(body.data.childRuns[0].id).toBe(CHILD_UUID);
+    expect(body.data.childRuns[0].agentId).toBe('sub-agent-1');
+    expect(body.data.childRuns[0].parentRunId).toBe(VALID_UUID);
+  });
+
+  it('returns empty childRuns when run has no children', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.childRuns).toEqual([]);
+  });
+
+  it('returns parentRun when run has a parent', async () => {
+    const run = makeRunRow({ parent_run_id: PARENT_UUID }) as RunRow;
+    const parentRun = makeRunRow({
+      id: PARENT_UUID,
+      agent_id: 'orchestrator',
+      run_name: 'parent-task',
+    }) as RunRow;
+    mockGetRunById.mockResolvedValueOnce(run);
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+    mockGetAncestryChain.mockResolvedValueOnce([parentRun]);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.parentRun).toBeDefined();
+    expect(body.data.parentRun.id).toBe(PARENT_UUID);
+    expect(body.data.parentRun.agentId).toBe('orchestrator');
+  });
+
+  it('returns null parentRun when run has no parent', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.parentRun).toBeNull();
+  });
+
+  it('does not call getAncestryChain when run has no parent_run_id', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+
+    await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}`,
+    });
+
+    expect(mockGetAncestryChain).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /v1/runs/:runId/children — list child runs
+// ---------------------------------------------------------------------------
+
+describe('GET /v1/runs/:runId/children', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+
+  beforeEach(async () => {
+    app = await buildApp();
+    vi.clearAllMocks();
+    mockGetChildRunsByParentId.mockResolvedValue([]);
+  });
+
+  it('returns 200 with child runs', async () => {
+    const childRun = makeRunRow({
+      id: CHILD_UUID,
+      agent_id: 'sub-agent-1',
+      parent_run_id: VALID_UUID,
+    }) as RunRow;
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetChildRunsByParentId.mockResolvedValueOnce([childRun]);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/children`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0].id).toBe(CHILD_UUID);
+    expect(body.meta.count).toBe(1);
+    expect(body.meta.parentRunId).toBe(VALID_UUID);
+  });
+
+  it('returns empty array when no children exist', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/children`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data).toEqual([]);
+    expect(res.json().meta.count).toBe(0);
+  });
+
+  it('returns 404 for nonexistent parent run', async () => {
+    mockGetRunById.mockResolvedValueOnce(null);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/children`,
+    });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.json().error.code).toBe('RUN_NOT_FOUND');
+  });
+
+  it('returns 400 for invalid UUID', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/v1/runs/not-a-uuid/children',
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error.code).toBe('INVALID_RUN_ID');
+  });
+
+  it('returns 500 when DB throws', async () => {
+    mockGetRunById.mockRejectedValueOnce(new Error('DB down'));
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/children`,
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json().error.code).toBe('QUERY_FAILED');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /v1/runs/:runId/timeline — delegation points
+// ---------------------------------------------------------------------------
+
+describe('GET /v1/runs/:runId/timeline — delegation points', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+
+  beforeEach(async () => {
+    app = await buildApp();
+    vi.clearAllMocks();
+    mockGetChildRunsByParentId.mockResolvedValue([]);
+  });
+
+  const fakeTimeline = {
+    entries: [],
+    gaps: [],
+    summary: {
+      runId: VALID_UUID,
+      tenantId: 'tenant-abc',
+      eventCount: 0,
+      eventTypeCounts: {},
+      hasGaps: false,
+      toolCount: 0,
+      hasErrors: false,
+    },
+  };
+
+  it('returns delegation points when child runs exist', async () => {
+    const childRun = makeRunRow({
+      id: CHILD_UUID,
+      agent_id: 'research-sub-agent',
+      run_name: 'ai-safety-research',
+      parent_run_id: VALID_UUID,
+      status: 'success',
+    }) as RunRow;
+
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+    mockGetChildRunsByParentId.mockResolvedValueOnce([childRun]);
+    mockBuildTimeline.mockReturnValueOnce(fakeTimeline);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data.delegationPoints).toHaveLength(1);
+    expect(body.data.delegationPoints[0].childRunId).toBe(CHILD_UUID);
+    expect(body.data.delegationPoints[0].childAgentId).toBe('research-sub-agent');
+    expect(body.data.delegationPoints[0].childRunName).toBe('ai-safety-research');
+    expect(body.data.delegationPoints[0].childStatus).toBe('success');
+  });
+
+  it('returns empty delegation points when no children', async () => {
+    mockGetRunById.mockResolvedValueOnce(makeRunRow());
+    mockGetEventsByRunId.mockResolvedValueOnce([]);
+    mockBuildTimeline.mockReturnValueOnce(fakeTimeline);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/v1/runs/${VALID_UUID}/timeline`,
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.delegationPoints).toEqual([]);
   });
 });

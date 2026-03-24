@@ -5,9 +5,14 @@ import { useState, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchEvents, type SearchParams, type SearchEvent } from '@/lib/api';
 import { cn, formatTimestamp } from '@/lib/utils';
-import { EmptyState, Skeleton } from '@tracereplay/ui';
 import { getEventTypeConfig } from '@/components/timeline/event-type-config';
 import { SearchFilters } from '@/components/search-filters';
+import {
+  SearchResultsSkeleton,
+  SearchPromptState,
+  SearchNoResultsState,
+  ErrorState,
+} from '@/components/states';
 
 const PAGE_SIZE = 20;
 
@@ -68,32 +73,19 @@ export default function SearchPage() {
 
       {/* Error state */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-950">
-          <p className="text-sm font-medium text-red-800 dark:text-red-200">
-            Search failed
-          </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-            {error instanceof Error ? error.message : 'Unknown error'}
-          </p>
-        </div>
+        <ErrorState
+          title="Search failed"
+          error={error}
+          onRetry={() => void searchEvents(searchParams)}
+        />
       )}
 
       {/* Empty state — no query yet */}
-      {!isQueryActive && (
-        <EmptyState
-          title="Start searching"
-          description="Enter a query to search across event payloads, tool calls, prompts, error messages, and more."
-          className="rounded-lg border border-[var(--color-border)] p-12"
-        />
-      )}
+      {!isQueryActive && <SearchPromptState />}
 
       {/* Empty state — no results */}
       {isQueryActive && !isLoading && !error && allResults.length === 0 && (
-        <EmptyState
-          title="No results found"
-          description={`No events matched "${searchParams.q}". Try different keywords or adjust your filters.`}
-          className="rounded-lg border border-[var(--color-border)] p-12"
-        />
+        <SearchNoResultsState query={searchParams.q} />
       )}
 
       {/* Results list */}
@@ -176,29 +168,4 @@ function sanitizeHeadline(html: string): string {
     .replace(/&(?!(amp|lt|gt|quot|#39);)/g, '&amp;');
 }
 
-function SearchResultsSkeleton() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-[var(--color-border)] p-4"
-        >
-          <div className="flex items-center gap-2">
-            <Skeleton width="w-6" height="h-4" />
-            <Skeleton width="w-24" height="h-4" />
-            <Skeleton width="w-32" height="h-3" className="ml-auto" />
-          </div>
-          <div className="mt-2 space-y-1">
-            <Skeleton width="w-full" height="h-3" />
-            <Skeleton width="w-3/4" height="h-3" />
-          </div>
-          <div className="mt-3 flex items-center gap-3">
-            <Skeleton width="w-20" height="h-3" />
-            <Skeleton width="w-24" height="h-3" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+

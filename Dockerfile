@@ -15,6 +15,7 @@ COPY packages/replay-engine/package.json packages/replay-engine/
 COPY packages/graph-model/package.json packages/graph-model/
 COPY packages/sdk-typescript/package.json packages/sdk-typescript/
 COPY packages/ui/package.json packages/ui/
+COPY apps/web/package.json apps/web/
 COPY services/ingest-api/package.json services/ingest-api/
 COPY services/normalizer/package.json services/normalizer/
 COPY services/query-service/package.json services/query-service/
@@ -30,15 +31,13 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/*/node_modules ./packages/*/
-COPY --from=deps /app/services/*/node_modules ./services/*/
+# Copy entire deps workspace (preserves pnpm store + symlink structure)
+COPY --from=deps /app ./
+
+# Overlay source code on top of installed deps
 COPY . .
 
-# Restore full node_modules links (pnpm hoists differently)
-RUN pnpm install --frozen-lockfile --offline
-
-RUN pnpm build
+RUN pnpm turbo run build --filter='!@tracereplay/web'
 
 # ── Stage 3: Production runtime ───────────────────────────────────────────────
 FROM node:20-alpine AS runner

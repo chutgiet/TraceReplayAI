@@ -39,6 +39,7 @@ docs
 .github
 examples
 tests
+!tests/package.json
 
 # Misc
 *.md

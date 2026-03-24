@@ -269,4 +269,41 @@ describe('useLineageGraph', () => {
     expect(result.current.nodes).toBe(firstNodes);
     expect(result.current.edges).toBe(firstEdges);
   });
+
+  it('creates delegation edges when relatedRunEvents include child run', () => {
+    const parentEvents = makeSimpleRunEvents();
+
+    const childRunEvents: RunEvent[] = [
+      makeEvent({
+        id: 'child-evt-1',
+        runId: 'run-child',
+        type: 'run.start',
+        timestamp: '2026-03-22T10:00:02.500Z',
+        sequence: 1,
+        payload: { runName: 'child-run', parentRunId: 'run-001' },
+      }),
+      makeEvent({
+        id: 'child-evt-2',
+        runId: 'run-child',
+        type: 'run.end',
+        timestamp: '2026-03-22T10:00:04.000Z',
+        sequence: 2,
+        payload: { status: 'success', durationMs: 1500 },
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useLineageGraph(parentEvents, undefined, childRunEvents),
+    );
+
+    // Should have nodes from both runs
+    const runNodes = result.current.nodes.filter((n) => n.data.nodeType === 'run');
+    expect(runNodes.length).toBe(2);
+
+    // Should have delegation edges
+    const delegationEdges = result.current.edges.filter(
+      (e) => e.data?.edgeType === 'delegation',
+    );
+    expect(delegationEdges.length).toBe(1);
+  });
 });

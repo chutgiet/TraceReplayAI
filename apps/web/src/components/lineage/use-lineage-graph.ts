@@ -242,22 +242,29 @@ export interface UseLineageGraphResult {
   isEmpty: boolean;
 }
 
+const EMPTY_RELATED_EVENTS: RunEvent[] = [];
+
 /**
  * Build lineage graph from run events and convert to React Flow nodes/edges.
  * Accepts the raw RunEvent[] from the API and builds the graph client-side.
+ * Optionally accepts related run events (e.g. child sub-agent runs) to render
+ * cross-run delegation edges in the lineage graph.
  */
 export function useLineageGraph(
   events: RunEvent[],
   edgeVisibility: EdgeVisibility = DEFAULT_EDGE_VISIBILITY,
+  relatedRunEvents: RunEvent[] = EMPTY_RELATED_EVENTS,
 ): UseLineageGraphResult {
   const graph = useMemo(() => {
     if (events.length === 0) return null;
     const traceEvents = events.map(toTraceReplayEvent);
+    const relatedTraceEvents = relatedRunEvents.map(toTraceReplayEvent);
     return buildLineageGraph(traceEvents, {
       includeTemporal: true,
       includeDataFlow: true,
+      relatedRunEvents: relatedTraceEvents,
     });
-  }, [events]);
+  }, [events, relatedRunEvents]);
 
   const { nodes, edges } = useMemo(() => {
     if (!graph) return { nodes: [], edges: [] };

@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { fetchRun } from '@/lib/api';
+import type { RunDetail } from '@/lib/api';
 import { cn, formatTimestamp, formatDuration, statusColor } from '@/lib/utils';
 import { RunDetailTabs } from '@/components/run-detail-tabs';
+import { RunDetailSkeleton, ErrorState } from '@/components/states';
 
 export default function RunDetailLayout({
   children,
@@ -15,7 +17,7 @@ export default function RunDetailLayout({
   const params = useParams<{ runId: string }>();
   const runId = params.runId;
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['run', runId],
     queryFn: () => fetchRun(runId),
   });
@@ -26,26 +28,28 @@ export default function RunDetailLayout({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-950">
-        <p className="text-sm font-medium text-red-800 dark:text-red-200">
-          Failed to load run
-        </p>
-        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-          {error instanceof Error ? error.message : 'Unknown error'}
-        </p>
-        <Link
-          href="/runs"
-          className="mt-3 inline-block text-sm text-brand-600 hover:underline dark:text-brand-400"
-        >
-          Back to runs
-        </Link>
+      <div className="space-y-4">
+        <ErrorState
+          title="Failed to load run"
+          error={error}
+          onRetry={() => void refetch()}
+        />
+        <div className="text-center">
+          <Link
+            href="/runs"
+            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+          >
+            ← Back to all runs
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (!data) return null;
 
-  const { run, summary } = data.data;
+  const run = data.data as RunDetail;
+  const { summary, childRuns, parentRun } = run;
   const colors = statusColor(run.status);
 
   return (
@@ -55,6 +59,18 @@ export default function RunDetailLayout({
         <Link href="/runs" className="hover:text-[var(--color-text-secondary)]">
           Runs
         </Link>
+        {parentRun && parentRun.id && (
+          <>
+            <span className="mx-2">/</span>
+            <Link
+              href={`/runs/${parentRun.id}`}
+              className="hover:text-[var(--color-text-secondary)]"
+              title="Parent run"
+            >
+              ↑ {parentRun.id.slice(0, 8)}…
+            </Link>
+          </>
+        )}
         <span className="mx-2">/</span>
         <span className="text-[var(--color-text-primary)]">
           {run.id.slice(0, 8)}…
@@ -75,6 +91,17 @@ export default function RunDetailLayout({
                 </>
               )}
             </p>
+            {run.parentRunId && (
+              <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                Sub-agent of{' '}
+                <Link
+                  href={`/runs/${run.parentRunId}`}
+                  className="font-mono underline hover:text-[var(--color-text-secondary)]"
+                >
+                  {run.parentRunId.slice(0, 8)}…
+                </Link>
+              </p>
+            )}
           </div>
           <span
             className={cn(
@@ -94,6 +121,43 @@ export default function RunDetailLayout({
           <Stat label="Started" value={formatTimestamp(run.startedAt)} />
           <Stat label="Ended" value={formatTimestamp(run.endedAt)} />
         </div>
+
+        {/* Child runs (sub-agent delegations) */}
+        {childRuns && childRuns.length > 0 && (
+          <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+            <p className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">
+              Sub-agent Runs ({childRuns.length})
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {childRuns.map((child) => {
+                const childColors = statusColor(child.status ?? 'running');
+                return (
+                  <Link
+                    key={child.id}
+                    href={`/runs/${child.id}`}
+                    className="flex items-center gap-2 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs transition-colors hover:bg-[var(--color-surface-raised)]"
+                  >
+                    <span
+                      className={cn(
+                        'inline-block h-2 w-2 rounded-full',
+                        childColors.bg,
+                      )}
+                      aria-hidden="true"
+                    />
+                    <span className="font-mono">
+                      {child.id?.slice(0, 8) ?? '???'}…
+                    </span>
+                    {child.agentId && (
+                      <span className="text-[var(--color-text-muted)]">
+                        {child.agentId}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tab navigation */}
@@ -114,22 +178,4 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function RunDetailSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="h-4 w-32 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-      <div className="rounded-lg border border-[var(--color-border)] p-6">
-        <div className="h-6 w-72 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-        <div className="mt-2 h-4 w-48 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-        <div className="mt-6 grid grid-cols-4 gap-4 border-t border-[var(--color-border)] pt-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i}>
-              <div className="h-3 w-12 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-              <div className="mt-1 h-4 w-20 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+

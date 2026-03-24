@@ -132,6 +132,43 @@ export async function listRuns(
 }
 
 // ---------------------------------------------------------------------------
+// Child / ancestry run queries
+// ---------------------------------------------------------------------------
+
+/** Fetch all runs whose parent_run_id matches the given ID. */
+export async function getChildRunsByParentId(
+  parentRunId: string,
+  pool: Pool = getPool(),
+): Promise<RunRow[]> {
+  const result = await pool.query<RunRow>(
+    `SELECT * FROM runs WHERE parent_run_id = $1 ORDER BY started_at ASC`,
+    [parentRunId],
+  );
+  return result.rows;
+}
+
+/**
+ * Walk up the parent_run_id chain from a given run, returning ancestor runs
+ * from immediate parent → root. Returns empty array if the run has no parent.
+ * Guards against infinite loops with a max depth of 20.
+ */
+export async function getAncestryChain(
+  runId: string,
+  pool: Pool = getPool(),
+): Promise<RunRow[]> {
+  const result = await pool.query<RunRow>(
+    `WITH RECURSIVE ancestors AS (
+       SELECT r.* FROM runs r WHERE r.id = (SELECT parent_run_id FROM runs WHERE id = $1)
+       UNION ALL
+       SELECT r.* FROM runs r INNER JOIN ancestors a ON r.id = a.parent_run_id
+     )
+     SELECT * FROM ancestors LIMIT 20`,
+    [runId],
+  );
+  return result.rows;
+}
+
+// ---------------------------------------------------------------------------
 // events
 // ---------------------------------------------------------------------------
 

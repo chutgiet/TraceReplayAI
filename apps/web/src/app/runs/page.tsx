@@ -9,12 +9,11 @@ import { useState } from 'react';
 import {
   DataTable,
   StatusBadge,
-  EmptyState,
-  Skeleton,
   TimeDisplay,
   type ColumnDef,
   type RunStatus,
 } from '@tracereplay/ui';
+import { RunListSkeleton, RunsEmptyState, ErrorState } from '@/components/states';
 
 const PAGE_SIZE = 20;
 
@@ -117,24 +116,21 @@ export default function RunsPage() {
 
       <RunFilters filters={filters} onChange={setFilters} />
 
-      {isLoading && <RunsTableSkeleton />}
+      {isLoading && <RunListSkeleton />}
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-950">
-          <p className="text-sm font-medium text-red-800 dark:text-red-200">
-            Failed to load runs
-          </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-            {error instanceof Error ? error.message : 'Unknown error'}
-          </p>
-        </div>
+        <ErrorState
+          title="Failed to load runs"
+          error={error}
+          onRetry={() => void fetchRuns(filters)}
+        />
       )}
 
       {!isLoading && !error && allRuns.length === 0 && (
-        <EmptyState
-          title="No runs found"
-          description="Adjust your filters or ingest some events to get started."
-          className="rounded-lg border border-[var(--color-border)] p-12"
+        <RunsEmptyState
+          hasFilters={
+            Boolean(filters.status || filters.agentId || filters.startedAfter || filters.startedBefore)
+          }
         />
       )}
 
@@ -168,29 +164,4 @@ export default function RunsPage() {
   );
 }
 
-function RunsTableSkeleton() {
-  return (
-    <div className="overflow-hidden rounded-lg border border-[var(--color-border)]">
-      <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-raised)] px-4 py-3">
-        <div className="flex gap-8">
-          {['w-20', 'w-28', 'w-16', 'w-32', 'w-16', 'w-12'].map((w, i) => (
-            <Skeleton key={i} width={w} height="h-3" />
-          ))}
-        </div>
-      </div>
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex gap-8 border-b border-[var(--color-border)] px-4 py-3 last:border-0"
-        >
-          <Skeleton width="w-20" height="h-4" />
-          <Skeleton width="w-28" height="h-4" />
-          <Skeleton width="w-16" height="h-4" />
-          <Skeleton width="w-32" height="h-4" />
-          <Skeleton width="w-16" height="h-4" />
-          <Skeleton width="w-12" height="h-4" />
-        </div>
-      ))}
-    </div>
-  );
-}
+

@@ -18,6 +18,7 @@ export const FIXTURE_NAMES = [
   'partial-telemetry-run',
   'approval-denied-run',
   'out-of-order-run',
+  'sub-agent-delegation-run',
 ] as const;
 
 export type FixtureName = (typeof FIXTURE_NAMES)[number];

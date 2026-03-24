@@ -36,3 +36,4 @@
 
 ## Notes
 > Any additional context or open questions.
+> One sentence concise commit message description of the changes made.

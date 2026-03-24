@@ -4,47 +4,33 @@ import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { fetchRunEvents } from '@/lib/api';
 import { eventTypeClass, formatTimestamp } from '@/lib/utils';
+import { RunEventsSkeleton, EventsEmptyState, ErrorState } from '@/components/states';
 
 export default function RunOverviewPage() {
   const params = useParams<{ runId: string }>();
   const runId = params.runId;
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['events', runId],
     queryFn: () => fetchRunEvents(runId),
   });
 
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-12 animate-pulse rounded border border-[var(--color-border)] bg-[var(--color-surface-overlay)]"
-          />
-        ))}
-      </div>
-    );
+    return <RunEventsSkeleton />;
   }
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-        <p className="text-sm text-red-800 dark:text-red-200">
-          Failed to load events
-        </p>
-      </div>
+      <ErrorState
+        title="Failed to load events"
+        error={error}
+        onRetry={() => void refetch()}
+      />
     );
   }
 
   if (!data || data.data.length === 0) {
-    return (
-      <div className="rounded-lg border border-[var(--color-border)] p-8 text-center">
-        <p className="text-sm text-[var(--color-text-muted)]">
-          No events recorded for this run.
-        </p>
-      </div>
-    );
+    return <EventsEmptyState />;
   }
 
   return (

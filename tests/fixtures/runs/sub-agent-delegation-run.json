@@ -1,0 +1,229 @@
+[
+  {
+    "id": "a0000007-0000-4000-8000-000000000001",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "run.start",
+    "timestamp": "2026-03-15T14:00:00.000Z",
+    "sequence": 1,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "sourceFramework": "custom",
+    "payload": {
+      "runName": "orchestrated-research",
+      "triggerSource": "user",
+      "configuration": { "delegationEnabled": true }
+    },
+    "tags": ["fixture", "delegation", "parent"],
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000007-0000-4000-8000-000000000002",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "prompt.input",
+    "timestamp": "2026-03-15T14:00:00.500Z",
+    "sequence": 2,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "payload": {
+      "role": "user",
+      "content": "Research recent AI safety papers and summarize the key findings.",
+      "tokenCount": 14
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000007-0000-4000-8000-000000000003",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "model.request",
+    "timestamp": "2026-03-15T14:00:01.000Z",
+    "sequence": 3,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "inputTokens": 48,
+      "temperature": 0.2
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000007-0000-4000-8000-000000000004",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "model.response",
+    "timestamp": "2026-03-15T14:00:02.000Z",
+    "sequence": 4,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "outputTokens": 30,
+      "latencyMs": 1000,
+      "cost": 0.003
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000007-0000-4000-8000-000000000005",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "tool.call.start",
+    "timestamp": "2026-03-15T14:00:02.100Z",
+    "sequence": 5,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "payload": {
+      "toolName": "delegate-to-researcher",
+      "toolId": "delegate-001",
+      "input": { "task": "search AI safety papers", "targetAgent": "research-sub-agent" },
+      "inputParameters": { "task": "search AI safety papers", "targetAgent": "research-sub-agent" }
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000008-0000-4000-8000-000000000001",
+    "runId": "b0000008-0000-4000-8000-000000000001",
+    "type": "run.start",
+    "timestamp": "2026-03-15T14:00:02.200Z",
+    "sequence": 1,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "research-sub-agent",
+    "sourceFramework": "custom",
+    "payload": {
+      "runName": "ai-safety-research",
+      "triggerSource": "agent",
+      "parentRunId": "b0000007-0000-4000-8000-000000000001"
+    },
+    "tags": ["fixture", "delegation", "child"],
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000008-0000-4000-8000-000000000002",
+    "runId": "b0000008-0000-4000-8000-000000000001",
+    "type": "context.retrieved",
+    "timestamp": "2026-03-15T14:00:03.000Z",
+    "sequence": 2,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "research-sub-agent",
+    "payload": {
+      "source": "arxiv_api",
+      "query": "AI safety alignment 2026",
+      "documentIds": ["arxiv-2026-001", "arxiv-2026-002"],
+      "snippetCount": 2,
+      "relevanceScores": [0.96, 0.91]
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000008-0000-4000-8000-000000000003",
+    "runId": "b0000008-0000-4000-8000-000000000001",
+    "type": "model.request",
+    "timestamp": "2026-03-15T14:00:03.500Z",
+    "sequence": 3,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "research-sub-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "inputTokens": 200,
+      "temperature": 0.1
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000008-0000-4000-8000-000000000004",
+    "runId": "b0000008-0000-4000-8000-000000000001",
+    "type": "model.response",
+    "timestamp": "2026-03-15T14:00:05.000Z",
+    "sequence": 4,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "research-sub-agent",
+    "payload": {
+      "modelProvider": "openai",
+      "modelId": "gpt-4",
+      "outputTokens": 150,
+      "latencyMs": 1500,
+      "cost": 0.012
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000008-0000-4000-8000-000000000005",
+    "runId": "b0000008-0000-4000-8000-000000000001",
+    "type": "prompt.output",
+    "timestamp": "2026-03-15T14:00:05.100Z",
+    "sequence": 5,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "research-sub-agent",
+    "payload": {
+      "content": "Found 2 relevant AI safety papers: (1) Constitutional AI approaches to alignment, (2) Scalable oversight mechanisms for frontier models.",
+      "tokenCount": 150,
+      "finishReason": "stop",
+      "modelId": "gpt-4"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000008-0000-4000-8000-000000000006",
+    "runId": "b0000008-0000-4000-8000-000000000001",
+    "type": "run.end",
+    "timestamp": "2026-03-15T14:00:05.200Z",
+    "sequence": 6,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "research-sub-agent",
+    "payload": {
+      "status": "success",
+      "durationMs": 3000,
+      "summary": "Retrieved and summarized 2 AI safety papers"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000007-0000-4000-8000-000000000006",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "tool.call.end",
+    "timestamp": "2026-03-15T14:00:05.300Z",
+    "sequence": 6,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "payload": {
+      "toolName": "delegate-to-researcher",
+      "toolId": "delegate-001",
+      "output": { "childRunId": "b0000008-0000-4000-8000-000000000001", "status": "success" },
+      "durationMs": 3200,
+      "success": true
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000007-0000-4000-8000-000000000007",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "prompt.output",
+    "timestamp": "2026-03-15T14:00:06.000Z",
+    "sequence": 7,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "payload": {
+      "content": "Based on the research sub-agent's findings, here are the key AI safety papers...",
+      "tokenCount": 45,
+      "finishReason": "stop",
+      "modelId": "gpt-4"
+    },
+    "schemaVersion": "1.0.0"
+  },
+  {
+    "id": "a0000007-0000-4000-8000-000000000008",
+    "runId": "b0000007-0000-4000-8000-000000000001",
+    "type": "run.end",
+    "timestamp": "2026-03-15T14:00:06.500Z",
+    "sequence": 8,
+    "tenantId": "tenant-fixture-001",
+    "sourceAgent": "orchestrator-agent",
+    "payload": {
+      "status": "success",
+      "durationMs": 6500,
+      "summary": "Orchestrated research delegation and synthesized findings"
+    },
+    "schemaVersion": "1.0.0"
+  }
+]

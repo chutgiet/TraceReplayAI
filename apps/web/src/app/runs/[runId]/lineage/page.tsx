@@ -2,17 +2,44 @@
 
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { fetchRunEvents } from '@/lib/api';
+import { fetchRunEvents, fetchChildRuns } from '@/lib/api';
+import type { RunEvent } from '@/lib/api';
 import { LineageGraphView } from '@/components/lineage';
+import { LineageSkeleton, ErrorState } from '@/components/states';
 
 export default function LineagePage() {
   const params = useParams<{ runId: string }>();
   const runId = params.runId;
 
-  const { data, isLoading, error } = useQuery({
+  // Fetch the main run events
+  const eventsQuery = useQuery({
     queryKey: ['run-events', runId],
     queryFn: () => fetchRunEvents(runId),
   });
+
+  // Fetch child runs to determine if we need cross-run lineage
+  const childRunsQuery = useQuery({
+    queryKey: ['child-runs', runId],
+    queryFn: () => fetchChildRuns(runId),
+  });
+
+  // Fetch events for each child run (only when child runs are loaded)
+  const childRunIds = childRunsQuery.data?.data?.map((r) => r.id).filter(Boolean) as string[] ?? [];
+  const childEventsQuery = useQuery({
+    queryKey: ['child-run-events', ...childRunIds],
+    queryFn: async () => {
+      const allChildEvents: RunEvent[] = [];
+      for (const childId of childRunIds) {
+        const res = await fetchRunEvents(childId);
+        allChildEvents.push(...res.data);
+      }
+      return allChildEvents;
+    },
+    enabled: childRunIds.length > 0,
+  });
+
+  const isLoading = eventsQuery.isLoading || childRunsQuery.isLoading;
+  const error = eventsQuery.error || childRunsQuery.error;
 
   if (isLoading) {
     return <LineageSkeleton />;
@@ -20,18 +47,18 @@ export default function LineagePage() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-950">
-        <p className="text-sm font-medium text-red-800 dark:text-red-200">
-          Failed to load lineage data
-        </p>
-        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-          {error instanceof Error ? error.message : 'Unknown error'}
-        </p>
-      </div>
+      <ErrorState
+        title="Failed to load lineage data"
+        error={error}
+        onRetry={() => {
+          void eventsQuery.refetch();
+          void childRunsQuery.refetch();
+        }}
+      />
     );
   }
 
-  if (!data) return null;
+  if (!eventsQuery.data) return null;
 
   return (
     <div className="space-y-4">
@@ -40,20 +67,18 @@ export default function LineagePage() {
         <p className="text-sm text-[var(--color-text-secondary)]">
           Causal dependency graph for run{' '}
           <span className="font-mono">{runId.slice(0, 8)}…</span>
+          {childRunIds.length > 0 && (
+            <span className="ml-2 text-violet-600 dark:text-violet-400">
+              ({childRunIds.length} sub-agent {childRunIds.length === 1 ? 'run' : 'runs'} linked)
+            </span>
+          )}
         </p>
       </div>
 
-      <LineageGraphView events={data.data} />
-    </div>
-  );
-}
-
-function LineageSkeleton() {
-  return (
-    <div className="space-y-4">
-      <div className="h-6 w-48 animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-      <div className="h-10 w-full animate-pulse rounded bg-[var(--color-surface-overlay)]" />
-      <div className="h-[600px] animate-pulse rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-overlay)]" />
+      <LineageGraphView
+        events={eventsQuery.data.data}
+        relatedRunEvents={childEventsQuery.data ?? []}
+      />
     </div>
   );
 }

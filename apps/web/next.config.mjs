@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
 
   // Transpile internal workspace packages
   transpilePackages: ['@tracereplay/ui'],

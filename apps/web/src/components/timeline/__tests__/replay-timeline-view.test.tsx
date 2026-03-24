@@ -354,4 +354,34 @@ describe('ReplayTimelineView', () => {
     const agents = screen.getAllByText('test-agent');
     expect(agents.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('renders delegation points section when present', () => {
+    const timeline = makeTimeline({
+      delegationPoints: [
+        {
+          childRunId: 'child-run-001',
+          childAgentId: 'research-sub-agent',
+          childRunName: 'ai-safety-research',
+          childStatus: 'success',
+          childStartedAt: '2026-03-15T10:01:00.000Z',
+          childEndedAt: '2026-03-15T10:02:00.000Z',
+        },
+      ],
+    });
+
+    render(<ReplayTimelineView timeline={timeline} />);
+
+    const matches = screen.getAllByText(/sub-agent delegation/i);
+    expect(matches.length).toBeGreaterThanOrEqual(1);
+    // childRunName is rendered (falls back to childAgentId when absent)
+    expect(screen.getByText(/ai-safety-research/)).toBeInTheDocument();
+  });
+
+  it('does not render delegation section when no delegation points', () => {
+    const timeline = makeTimeline({ delegationPoints: [] });
+
+    render(<ReplayTimelineView timeline={timeline} />);
+
+    expect(screen.queryByText(/sub-agent delegation/i)).not.toBeInTheDocument();
+  });
 });
