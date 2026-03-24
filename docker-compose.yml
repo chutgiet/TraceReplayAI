@@ -64,7 +64,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/healthz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -89,7 +89,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3002/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3002/healthz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -118,7 +118,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3003/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3003/healthz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -147,7 +147,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3004/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3004/healthz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -172,7 +172,7 @@ services:
       query-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
