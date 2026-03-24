@@ -37,10 +37,14 @@ describe('Fixture schema validation', () => {
         }
       });
 
-      it('all events share the same runId', () => {
+      it('all events share the same runId (or multiple for delegation)', () => {
         const events = loadFixture(name);
         const runIds = new Set(events.map((e) => e.runId));
-        expect(runIds.size).toBe(1);
+        if (name === 'sub-agent-delegation-run') {
+          expect(runIds.size).toBe(2);
+        } else {
+          expect(runIds.size).toBe(1);
+        }
       });
 
       it('all events share the same tenantId', () => {
@@ -65,9 +69,9 @@ describe('Fixture schema validation', () => {
     });
   }
 
-  it('loadAllFixtures loads all 6 fixtures', () => {
+  it('loadAllFixtures loads all 7 fixtures', () => {
     const all = loadAllFixtures();
-    expect(Object.keys(all)).toHaveLength(6);
+    expect(Object.keys(all)).toHaveLength(7);
     for (const name of FIXTURE_NAMES) {
       expect(all[name].length).toBeGreaterThan(0);
     }
@@ -346,6 +350,56 @@ describe('Fixture replay correctness', () => {
       const { summary } = buildTimeline(events);
       // 14:00:00 → 14:05:33 = 333_000ms
       expect(summary.durationMs).toBe(333000);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // 7. sub-agent-delegation-run
+  // -----------------------------------------------------------------------
+  describe('sub-agent-delegation-run', () => {
+    let events: TraceReplayEvent[];
+
+    it('loads the fixture', () => {
+      events = loadFixture('sub-agent-delegation-run');
+      expect(events).toHaveLength(14);
+    });
+
+    it('contains events from two distinct runs', () => {
+      const runIds = new Set(events.map((e) => e.runId));
+      expect(runIds.size).toBe(2);
+    });
+
+    it('child run has parentRunId referencing parent', () => {
+      const childStart = events.find(
+        (e) => e.type === 'run.start' && e.sourceAgent === 'research-sub-agent',
+      );
+      expect(childStart).toBeDefined();
+      expect((childStart!.payload as Record<string, unknown>).parentRunId).toBe('b0000007-0000-4000-8000-000000000001');
+    });
+
+    it('parent run events build a valid timeline', () => {
+      const parentEvents = events.filter(
+        (e) => e.runId === 'b0000007-0000-4000-8000-000000000001',
+      );
+      const timeline = buildTimeline(parentEvents);
+      expect(timeline.entries.length).toBeGreaterThan(0);
+      expect(timeline.summary.status).toBe('success');
+    });
+
+    it('child run events build a valid timeline', () => {
+      const childEvents = events.filter(
+        (e) => e.runId === 'b0000008-0000-4000-8000-000000000001',
+      );
+      const timeline = buildTimeline(childEvents);
+      expect(timeline.entries.length).toBeGreaterThan(0);
+      expect(timeline.summary.status).toBe('success');
+    });
+
+    it('parent run includes delegation via tool.call.start', () => {
+      const delegateCall = events.find(
+        (e) => e.type === 'tool.call.start' && e.payload.toolName === 'delegate-to-researcher',
+      );
+      expect(delegateCall).toBeDefined();
     });
   });
 });

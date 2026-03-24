@@ -289,6 +289,9 @@ When performing engineering work, aim to produce:
 - clear file placement
 - brief implementation notes if needed
 
+When all work is complete (all todos finished), end your final summary with a single conventional-commit message describing the changes, e.g.:
+> Add sub-agent run linking with parent/child queries, timeline delegation, and lineage cross-run edges
+
 If asked to plan work, provide:
 - goal
 - affected modules

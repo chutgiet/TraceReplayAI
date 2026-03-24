@@ -4,6 +4,8 @@ export {
   updateRunStatus,
   getRunById,
   listRuns,
+  getChildRunsByParentId,
+  getAncestryChain,
   insertEvent,
   getEventById,
   getEventsByRunId,

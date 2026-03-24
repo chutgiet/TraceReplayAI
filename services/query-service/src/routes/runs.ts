@@ -4,6 +4,8 @@ import {
   listRuns,
   getRunById,
   getEventsByRunId,
+  getChildRunsByParentId,
+  getAncestryChain,
 } from '@tracereplay/common';
 import type { ListRunsFilter, CursorPage, RunRow, RunListRow } from '@tracereplay/common';
 
@@ -126,7 +128,7 @@ export async function runsRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // -----------------------------------------------------------------------
-  // GET /v1/runs/:runId — get single run details + summary
+  // GET /v1/runs/:runId — get single run details + summary + child runs
   // -----------------------------------------------------------------------
   app.get('/runs/:runId', async (request, reply) => {
     const paramParsed = runIdParamSchema.safeParse(request.params);
@@ -157,13 +159,20 @@ export async function runsRoutes(app: FastifyInstance): Promise<void> {
         });
       }
 
-      const events = await getEventsByRunId(runId);
+      const [events, childRuns, ancestry] = await Promise.all([
+        getEventsByRunId(runId),
+        getChildRunsByParentId(runId),
+        run.parent_run_id ? getAncestryChain(runId) : Promise.resolve([]),
+      ]);
+
       const summary = computeRunSummary(run, events.length);
 
       return reply.status(200).send({
         data: {
           ...formatRunResponse(run),
           summary,
+          childRuns: childRuns.map(formatRunResponse),
+          parentRun: ancestry.length > 0 ? formatRunResponse(ancestry[0]!) : null,
         },
         meta: { requestId: request.id },
       });
@@ -173,6 +182,60 @@ export async function runsRoutes(app: FastifyInstance): Promise<void> {
         error: {
           code: 'QUERY_FAILED',
           message: 'Internal error while querying run',
+          requestId: request.id,
+        },
+      });
+    }
+  });
+
+  // -----------------------------------------------------------------------
+  // GET /v1/runs/:runId/children — list child (sub-agent) runs
+  // -----------------------------------------------------------------------
+  app.get('/runs/:runId/children', async (request, reply) => {
+    const paramParsed = runIdParamSchema.safeParse(request.params);
+
+    if (!paramParsed.success) {
+      return reply.status(400).send({
+        error: {
+          code: 'INVALID_RUN_ID',
+          message: 'runId must be a valid UUID',
+          details: paramParsed.error.issues,
+          requestId: request.id,
+        },
+      });
+    }
+
+    const { runId } = paramParsed.data;
+
+    try {
+      const run = await getRunById(runId);
+
+      if (!run) {
+        return reply.status(404).send({
+          error: {
+            code: 'RUN_NOT_FOUND',
+            message: `Run ${runId} not found`,
+            requestId: request.id,
+          },
+        });
+      }
+
+      const childRuns = await getChildRunsByParentId(runId);
+
+      return reply.status(200).send({
+        data: childRuns.map(formatRunResponse),
+        meta: {
+          requestId: request.id,
+          count: childRuns.length,
+          parentRunId: runId,
+        },
+      });
+    } catch (err) {
+      request.log.error({ err, runId }, 'Failed to get child runs');
+      return reply.status(500).send({
+        error: {
+          code: 'QUERY_FAILED',
+          message: 'Internal error while querying child runs',
           requestId: request.id,
         },
       });

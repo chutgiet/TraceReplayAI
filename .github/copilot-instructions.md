@@ -53,6 +53,11 @@ TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI a
 5. **Open-core boundary** — SDK/schema packages are public, replay/evidence/policy are internal
 6. **Missing data stays missing** — never fabricate telemetry that wasn't observed
 
+## Completion protocol
+
+When all work on a task is complete (all todos finished), end the final summary with a single conventional-commit message describing the changes, e.g.:
+> Add sub-agent run linking with parent/child queries, timeline delegation, and lineage cross-run edges
+
 ## For detailed context
 
 See the `.ai/` directory for comprehensive prompts, architecture docs, event model spec, coding standards, and task tracking.

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { getRunById, getEventsByRunId } from '@tracereplay/common';
-import type { EventRow } from '@tracereplay/common';
+import { getRunById, getEventsByRunId, getChildRunsByParentId } from '@tracereplay/common';
+import type { EventRow, RunRow } from '@tracereplay/common';
 import type { TraceReplayEvent, EventId, RunId, TenantId, EventType } from '@tracereplay/event-schema';
 import { buildTimeline } from '@tracereplay/replay-engine';
 
@@ -73,12 +73,30 @@ export async function timelineRoutes(app: FastifyInstance): Promise<void> {
         });
       }
 
-      const eventRows = await getEventsByRunId(runId);
+      const [eventRows, childRuns] = await Promise.all([
+        getEventsByRunId(runId),
+        getChildRunsByParentId(runId),
+      ]);
+
       const events = eventRows.map(toCanonicalEvent);
       const timeline = buildTimeline(events);
 
+      // Build delegation points: map of run.start event IDs that reference
+      // this run as parent, linking to their child run details.
+      const delegationPoints = childRuns.map((child: RunRow) => ({
+        childRunId: child.id,
+        childAgentId: child.agent_id,
+        childRunName: child.run_name,
+        childStatus: child.status,
+        childStartedAt: child.started_at.toISOString(),
+        childEndedAt: child.ended_at?.toISOString() ?? null,
+      }));
+
       return reply.status(200).send({
-        data: timeline,
+        data: {
+          ...timeline,
+          delegationPoints,
+        },
         meta: { requestId: request.id },
       });
     } catch (err) {

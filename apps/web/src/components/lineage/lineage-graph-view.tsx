@@ -44,13 +44,15 @@ const edgeTypes: EdgeTypes = {
 
 export interface LineageGraphViewProps {
   events: RunEvent[];
+  /** Events from related runs (e.g. child sub-agent runs) for cross-run edges. */
+  relatedRunEvents?: RunEvent[];
 }
 
 // ---------------------------------------------------------------------------
 // Inner component (needs ReactFlowProvider context)
 // ---------------------------------------------------------------------------
 
-function LineageGraphViewInner({ events }: LineageGraphViewProps) {
+function LineageGraphViewInner({ events, relatedRunEvents }: LineageGraphViewProps) {
   const [edgeVisibility, setEdgeVisibility] = useState<EdgeVisibility>(
     DEFAULT_EDGE_VISIBILITY,
   );
@@ -60,6 +62,7 @@ function LineageGraphViewInner({ events }: LineageGraphViewProps) {
   const { nodes, edges, graph, isEmpty } = useLineageGraph(
     events,
     edgeVisibility,
+    relatedRunEvents ?? [],
   );
 
   const handleEdgeVisibilityChange = useCallback(

@@ -6,6 +6,7 @@ import type { ReplayTimeline as ReplayTimelineData, TimelineEntry, TimelineGap }
 import { RunSummaryHeader } from './run-summary-header';
 import { TimelineEntryRow } from './timeline-entry-row';
 import { TimelineGapMarker } from './timeline-gap-marker';
+import { DelegationPointMarker } from './delegation-point-marker';
 import { EventDetailPanel } from './event-detail-panel';
 import { computeMaxDuration } from './timeline-duration-bar';
 import { TimelineEmptyState } from '@/components/states';
@@ -24,7 +25,7 @@ export function ReplayTimelineView({
   timeline,
   className,
 }: ReplayTimelineViewProps): React.JSX.Element {
-  const { entries, gaps, summary } = timeline;
+  const { entries, gaps, summary, delegationPoints } = timeline;
 
   const [selectedEntryIndex, setSelectedEntryIndex] = useState<number | null>(null);
 
@@ -122,6 +123,21 @@ export function ReplayTimelineView({
           {postGaps.map((gap, i) => (
             <TimelineGapMarker key={`post-gap-${i}`} gap={gap} className="mt-2" />
           ))}
+
+          {/* Sub-agent delegation points */}
+          {delegationPoints && delegationPoints.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-medium text-[var(--color-text-muted)]">
+                Sub-agent Delegations ({delegationPoints.length})
+              </p>
+              {delegationPoints.map((dp) => (
+                <DelegationPointMarker
+                  key={dp.childRunId}
+                  delegationPoint={dp}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Event detail panel (responsive: side panel on lg, inline on smaller) */}

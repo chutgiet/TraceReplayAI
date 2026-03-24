@@ -145,10 +145,31 @@ export interface RunSummary {
   hasErrors: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Delegation / sub-agent types
+// ---------------------------------------------------------------------------
+
+export interface DelegationPoint {
+  childRunId: string;
+  childAgentId: string;
+  childRunName: string | null;
+  childStatus: string;
+  childStartedAt: string;
+  childEndedAt: string | null;
+}
+
+/** Extended run detail response including child runs and parent run. */
+export interface RunDetail extends Run {
+  summary: { eventCount: number; durationMs: number | null; status: string };
+  childRuns: Partial<Run>[];
+  parentRun: Partial<Run> | null;
+}
+
 export interface ReplayTimeline {
   entries: TimelineEntry[];
   gaps: TimelineGap[];
   summary: RunSummary;
+  delegationPoints?: DelegationPoint[];
 }
 
 // ---------------------------------------------------------------------------
@@ -171,7 +192,7 @@ export async function fetchRuns(params?: RunListParams) {
 }
 
 export async function fetchRun(runId: string) {
-  return request<{ run: Run; summary: { eventCount: number; durationMs: number | null; status: string } }>(`/runs/${encodeURIComponent(runId)}`);
+  return request<RunDetail>(`/runs/${encodeURIComponent(runId)}`);
 }
 
 export async function fetchRunEvents(runId: string) {
@@ -180,6 +201,10 @@ export async function fetchRunEvents(runId: string) {
 
 export async function fetchRunTimeline(runId: string) {
   return request<ReplayTimeline>(`/runs/${encodeURIComponent(runId)}/timeline`);
+}
+
+export async function fetchChildRuns(runId: string) {
+  return request<Partial<Run>[]>(`/runs/${encodeURIComponent(runId)}/children`);
 }
 
 // ---------------------------------------------------------------------------

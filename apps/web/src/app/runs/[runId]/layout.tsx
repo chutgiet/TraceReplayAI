@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { fetchRun } from '@/lib/api';
+import type { RunDetail } from '@/lib/api';
 import { cn, formatTimestamp, formatDuration, statusColor } from '@/lib/utils';
 import { RunDetailTabs } from '@/components/run-detail-tabs';
 import { RunDetailSkeleton, ErrorState } from '@/components/states';
@@ -47,7 +48,8 @@ export default function RunDetailLayout({
 
   if (!data) return null;
 
-  const { run, summary } = data.data;
+  const run = data.data as RunDetail;
+  const { summary, childRuns, parentRun } = run;
   const colors = statusColor(run.status);
 
   return (
@@ -57,6 +59,18 @@ export default function RunDetailLayout({
         <Link href="/runs" className="hover:text-[var(--color-text-secondary)]">
           Runs
         </Link>
+        {parentRun && parentRun.id && (
+          <>
+            <span className="mx-2">/</span>
+            <Link
+              href={`/runs/${parentRun.id}`}
+              className="hover:text-[var(--color-text-secondary)]"
+              title="Parent run"
+            >
+              ↑ {parentRun.id.slice(0, 8)}…
+            </Link>
+          </>
+        )}
         <span className="mx-2">/</span>
         <span className="text-[var(--color-text-primary)]">
           {run.id.slice(0, 8)}…
@@ -77,6 +91,17 @@ export default function RunDetailLayout({
                 </>
               )}
             </p>
+            {run.parentRunId && (
+              <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                Sub-agent of{' '}
+                <Link
+                  href={`/runs/${run.parentRunId}`}
+                  className="font-mono underline hover:text-[var(--color-text-secondary)]"
+                >
+                  {run.parentRunId.slice(0, 8)}…
+                </Link>
+              </p>
+            )}
           </div>
           <span
             className={cn(
@@ -96,6 +121,43 @@ export default function RunDetailLayout({
           <Stat label="Started" value={formatTimestamp(run.startedAt)} />
           <Stat label="Ended" value={formatTimestamp(run.endedAt)} />
         </div>
+
+        {/* Child runs (sub-agent delegations) */}
+        {childRuns && childRuns.length > 0 && (
+          <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+            <p className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">
+              Sub-agent Runs ({childRuns.length})
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {childRuns.map((child) => {
+                const childColors = statusColor(child.status ?? 'running');
+                return (
+                  <Link
+                    key={child.id}
+                    href={`/runs/${child.id}`}
+                    className="flex items-center gap-2 rounded-md border border-[var(--color-border)] px-3 py-1.5 text-xs transition-colors hover:bg-[var(--color-surface-raised)]"
+                  >
+                    <span
+                      className={cn(
+                        'inline-block h-2 w-2 rounded-full',
+                        childColors.bg,
+                      )}
+                      aria-hidden="true"
+                    />
+                    <span className="font-mono">
+                      {child.id?.slice(0, 8) ?? '???'}…
+                    </span>
+                    {child.agentId && (
+                      <span className="text-[var(--color-text-muted)]">
+                        {child.agentId}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tab navigation */}
