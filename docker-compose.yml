@@ -158,6 +158,33 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  tracereplay-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "services/tracereplay-mcp/dist/index.js"]
+    ports:
+      - "3005:3005"
+    environment:
+      TRANSPORT: sse
+      SSE_PORT: 3005
+      INGEST_API_URL: http://ingest-api:3001
+      QUERY_SERVICE_URL: http://query-service:3002
+      TENANT_ID: org-tracereplay-dev
+      WORKSPACE_DIR: /app
+      LOG_LEVEL: info
+      NODE_ENV: production
+    depends_on:
+      ingest-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3005/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
   # ---------------------------------------------------------------------------
   # Frontend
   # ---------------------------------------------------------------------------

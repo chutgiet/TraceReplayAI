@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "tracereplay": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["tsx", "services/tracereplay-mcp/src/index.ts"],
+      "env": {
+        "INGEST_API_URL": "http://localhost:3001",
+        "QUERY_SERVICE_URL": "http://localhost:3002",
+        "TENANT_ID": "org-tracereplay-dev",
+        "TRANSPORT": "stdio",
+        "WORKSPACE_DIR": "${workspaceFolder}"
+      }
+    }
+  }
+}

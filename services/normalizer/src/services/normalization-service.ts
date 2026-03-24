@@ -6,6 +6,7 @@ import {
   AdapterRegistry,
   PassthroughAdapter,
   OpenAIAgentsAdapter,
+  OpenAICodexAdapter,
   GitHubCopilotAdapter,
   ClaudeCodeAdapter,
 } from '@tracereplay/connectors-core';
@@ -35,6 +36,7 @@ export class NormalizationService {
     const registry = new AdapterRegistry();
     registry.register(new PassthroughAdapter());
     registry.register(new OpenAIAgentsAdapter());
+    registry.register(new OpenAICodexAdapter());
     registry.register(new GitHubCopilotAdapter());
     registry.register(new ClaudeCodeAdapter());
     return registry;

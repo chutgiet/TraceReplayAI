@@ -58,6 +58,19 @@ services:
       NODE_ENV: development
       LOG_LEVEL: debug
 
+  tracereplay-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    command: ["npx", "tsx", "watch", "services/tracereplay-mcp/src/index.ts"]
+    volumes:
+      - ./packages:/app/packages:ro
+      - ./services/tracereplay-mcp/src:/app/services/tracereplay-mcp/src:ro
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+
   web:
     build:
       context: .
