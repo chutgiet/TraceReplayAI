@@ -29,33 +29,43 @@
 - [x] Integration test: SDK → ingest → query → replay
 - [x] 417 unit/fixture tests passing across all packages
 
-## Milestone 3: Investigation UI (Current)
+## Milestone 3: Investigation UI (Complete ✅)
 > Goal: Visual replay and basic investigation
 
-- [ ] `apps/web`: Next.js scaffold with Tailwind
-- [ ] Run list view with search/filter
-- [ ] Run detail / replay timeline view
-- [ ] Event detail panel (expand/collapse)
-- [ ] Lineage graph visualization (basic)
-- [ ] Empty/error/loading states
-- [ ] `packages/ui`: shared component library
+- [x] `apps/web`: Next.js scaffold with Tailwind
+- [x] Run list view with search/filter
+- [x] Run detail / replay timeline view
+- [x] Event detail panel (expand/collapse)
+- [x] Lineage graph visualization (basic)
+- [x] Empty/error/loading states
+- [x] `packages/ui`: shared component library
+- [x] Full-text search across event payloads
+- [x] Redaction engine with configurable rules
+- [x] Docker Compose for full local stack
+- [x] Sub-agent run linking
 
-## Milestone 4: Lineage + Side Effects
-> Goal: Trace causal chains and downstream impact
+## Milestone 4: Evidence + Compliance (Current)
+> Goal: Generate audit-ready evidence bundles and trace side effects
 
-- [ ] `graph-model` package: lineage data structures
+- [x] `graph-model` package: lineage data structures
 - [ ] Side-effect tracking and visualization
-- [ ] Parent-child run linking (sub-agent delegation)
+- [x] Parent-child run linking (sub-agent delegation)
 - [ ] Query service: search by tool, side effect, error type
-
-## Milestone 5: Evidence + Compliance
-> Goal: Generate audit-ready evidence bundles
-
 - [ ] `evidence-service`: assemble run evidence
 - [ ] Export formats: JSON, PDF summary
-- [ ] Redaction engine: field-level redaction rules
-- [ ] Redaction audit trail
 - [ ] Evidence integrity hashing
+- [ ] Redaction audit trail
+
+## Milestone 5: SDK Ecosystem + Operations
+> Goal: Broader agent framework support and production readiness
+
+- [ ] Auto-instrumentation helpers for common patterns
+- [ ] LangGraph/LangChain adapter
+- [ ] Health check endpoints on all services
+- [ ] Prometheus metrics export
+- [ ] Structured logging across all services
+- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] Deployment documentation
 
 ## Milestone 6: Enterprise Features (Future)
 > Goal: Multi-tenant, policy, access control
