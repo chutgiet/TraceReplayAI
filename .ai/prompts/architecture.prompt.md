@@ -43,6 +43,13 @@ Event Store (canonical events)
 └─────────────────────────────────┘
     ↓
 Web UI / Admin UI / API consumers
+
+--- MCP Server (sidecar) ---
+AI coding agents (Copilot, Codex, Claude Code)
+    ↓ MCP protocol (stdio / SSE)
+TraceReplay MCP Server
+    ↓ emits telemetry → Ingest API
+    ↓ queries runs    → Query Service
 ```
 
 ## Key boundaries
@@ -57,6 +64,7 @@ Web UI / Admin UI / API consumers
 | Evidence service | Internal service | Generates audit bundles |
 | Policy service | Internal service | Enterprise rule evaluation |
 | Query service | Internal service | Investigation + search API |
+| MCP server | Internal service | Instruments AI agent tool calls for audit capture |
 | Web UI | Internal app | Replay viewer, investigation UI |
 
 ## Schema evolution rules

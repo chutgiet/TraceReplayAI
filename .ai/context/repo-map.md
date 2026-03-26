@@ -18,6 +18,16 @@ tracereplay-ai/
 
 ---
 
+## `.github/` — GitHub and agent configuration
+
+| Path | Purpose |
+|---|---|
+| `.github/copilot-instructions.md` | Workspace-level Copilot instructions |
+| `.github/.instructions.md` | Additional Copilot context (package naming, API patterns) |
+| `.github/agents/tracereplay.md` | TraceReplay audit agent definition — routes work through MCP tools |
+
+---
+
 ## `.ai/` — Agent development context
 
 | Path | Purpose |
@@ -29,7 +39,7 @@ tracereplay-ai/
 | `prompts/testing.prompt.md` | Testing strategy and patterns |
 | `prompts/security.prompt.md` | Security review and implementation |
 | `context/product-overview.md` | Product mission, scope, non-goals |
-| `context/architecture-overview.md` | System architecture and data flow |
+| `context/architecture-overview.md` | System architecture, data flow, MCP integration |
 | `context/event-model.md` | Canonical event schema specification |
 | `context/coding-standards.md` | TypeScript conventions and patterns |
 | `context/repo-map.md` | This file — repository structure guide |
@@ -83,10 +93,21 @@ Future:
 | `services/query-service/` | Investigation search and filtering API | event-schema, common |
 | `services/evidence-service/` | Generates audit evidence bundles | event-schema, replay-engine, common |
 | `services/worker/` | Async job processing (normalization, indexing) | event-schema, common |
+| `services/tracereplay-mcp/` | MCP server for AI agent telemetry capture | @modelcontextprotocol/sdk, zod |
 
 Future:
 - `services/policy-service/` — Enterprise policy evaluation
 - `services/connector-service/` — External system integrations
+
+### TraceReplay MCP Server
+
+The MCP server at `services/tracereplay-mcp/` implements the [Model Context Protocol](https://modelcontextprotocol.io) so AI coding agents (GitHub Copilot, OpenAI Codex, Claude Code) can connect and have every tool invocation auto-captured as audit telemetry.
+
+- **Transport**: stdio (VS Code default) or SSE (Docker/network on port 3005)
+- **Telemetry emission**: Every tool call emits raw events to the Ingest API (`/v1/raw-events`)
+- **Query integration**: `tracereplay_query_runs` and `tracereplay_query_timeline` call the Query Service
+- **Security**: Path traversal prevention via workspace-scoped path resolution
+- **Agent config**: `.github/agents/tracereplay.md` defines the Copilot agent that routes work through MCP tools
 
 ---
 

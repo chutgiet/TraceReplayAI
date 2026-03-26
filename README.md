@@ -78,6 +78,7 @@ pnpm docker:reset    # destroy volumes (reset DB) and rebuild
 | Query Service | http://localhost:3002 | `GET /v1/runs`, `/v1/events`, `/v1/search` |
 | Normalizer | http://localhost:3003 | BullMQ worker (health: `/healthz`) |
 | Worker | http://localhost:3004 | Async job runner (health: `/healthz`) |
+| MCP Server | http://localhost:3005 | TraceReplay MCP server (SSE) or via stdio |
 | PostgreSQL | localhost:5432 | Event store (user: `tracereplay`) |
 | Redis | localhost:6379 | Job queue |
 
@@ -139,6 +140,7 @@ docker compose down
 │   ├── replay-service/— Serves replay timelines
 │   ├── query-service/ — Investigation search API
 │   ├── evidence-service/— Audit evidence generation
+│   ├── tracereplay-mcp/— MCP server for AI agent session capture
 │   └── worker/       — Async job processing
 ├── docs/             — Documentation
 ├── examples/         — Integration examples
@@ -155,7 +157,7 @@ docker compose down
 ┌─────────────────────────────────────────────────────┐
 │                    SDK / Adapters                   │
 │  TypeScript SDK · Python SDK · OTel Exporter        │
-│  OpenAI · Anthropic · Ollama models.                │
+│  OpenAI · Anthropic · Ollama models                 │
 └──────────────────────┬──────────────────────────────┘
                        │ HTTP / gRPC
                        ▼
@@ -193,6 +195,19 @@ docker compose down
 │                    Web UI                           │
 │  Replay viewer, investigation, admin                │
 └─────────────────────────────────────────────────────┘
+
+┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+│         TraceReplay MCP Server                      │
+│  Instruments AI coding agent (Copilot, Codex,       │
+│  Claude Code) tool calls in real time.              │
+│  Transport: stdio (VS Code) or SSE (Docker)         │
+│                                                     │
+│  ┌──────────┐  emits telemetry   ┌────────────┐    │
+│  │ AI Agent │ ──── MCP ────────► │ Ingest API │    │
+│  └──────────┘  queries runs      ├────────────┤    │
+│                ─────────────────► │Query Service│    │
+│                                  └────────────┘    │
+└ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
 See [.ai/context/architecture-overview.md](.ai/context/architecture-overview.md) for the full architecture documentation.
@@ -209,6 +224,7 @@ See [.ai/context/architecture-overview.md](.ai/context/architecture-overview.md)
 | **Replay** | Reconstructing the execution timeline from stored events |
 | **Lineage** | Causal graph of events, dependencies, and side effects |
 | **Evidence** | Audit-ready bundle assembled from a run's events |
+| **MCP Server** | Model Context Protocol server that instruments AI agent tool calls for audit-grade session capture |
 
 ---
 
@@ -219,6 +235,7 @@ See [.ai/context/architecture-overview.md](.ai/context/architecture-overview.md)
 - **Next.js + React + Tailwind** — Frontend
 - **PostgreSQL** — Append-only event store
 - **BullMQ + Redis** — Async job queue
+- **MCP (Model Context Protocol)** — AI agent tool instrumentation
 - **Ollama** — Local model inference (self-hosted LLMs)
 - **pnpm + Turborepo** — Monorepo tooling
 - **Vitest** — Testing
