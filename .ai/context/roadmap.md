@@ -43,6 +43,7 @@
 - [x] Redaction engine with configurable rules
 - [x] Docker Compose for full local stack
 - [x] Sub-agent run linking
+- [x] TraceReplay MCP server for live AI agent session capture (stdio + SSE)
 
 ## Milestone 4: Evidence + Compliance (Current)
 > Goal: Generate audit-ready evidence bundles and trace side effects

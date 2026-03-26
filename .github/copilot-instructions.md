@@ -14,6 +14,7 @@ TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI a
 - **Frontend**: Next.js + React + Tailwind
 - **Database**: PostgreSQL (append-only event store)
 - **Queue**: BullMQ + Redis
+- **MCP Server**: Model Context Protocol server for AI agent telemetry capture
 - **Testing**: Vitest
 
 ## Key domain concepts
@@ -24,12 +25,13 @@ TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI a
 - **Replay**: Reconstructing the execution timeline from stored events
 - **Lineage**: Causal graph of events, side effects, and dependencies
 - **Evidence**: Audit-ready bundle assembled from a run's events
+- **MCP Server**: Model Context Protocol server that instruments AI coding agent tool calls, auto-emitting telemetry to the ingest pipeline for audit-grade session capture
 
 ## Repository structure
 
 - `apps/` — Frontend applications (Next.js)
 - `packages/` — Shared libraries (event-schema, replay-engine, SDK, etc.)
-- `services/` — Backend services (ingest-api, normalizer, query-service, etc.)
+- `services/` — Backend services (ingest-api, normalizer, query-service, tracereplay-mcp, etc.)
 - `tests/` — Integration, e2e, fixtures, performance tests
 - `docs/` — Documentation
 - `.ai/` — Agent development prompts, context, tasks, and ADRs

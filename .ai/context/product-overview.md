@@ -22,6 +22,7 @@ TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI a
 4. **Drift detection** — Compare current behavior against previous runs or baselines
 5. **Lineage tracing** — Map the chain of data, decisions, and side effects across systems
 6. **Operational monitoring** — Track agent health, error rates, latency, and cost
+7. **Live development capture** — Capture AI coding agent sessions (Copilot, Codex, Claude Code) in real time via the MCP server for audit replay of development work
 
 ## Non-goals
 

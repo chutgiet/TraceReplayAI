@@ -86,6 +86,7 @@ TraceReplay AI is organized around these core domains:
 - evidence generation
 - investigation/query
 - connectors
+- MCP server (AI agent tool instrumentation and telemetry capture)
 - policy/risk evaluation
 - frontend replay and investigation UI
 
@@ -111,6 +112,7 @@ Examples:
 - `normalizer`: map external telemetry into canonical events
 - `replay-engine`: build timeline and causal replay
 - `evidence-service`: generate evidence bundles and audit reports
+- `tracereplay-mcp`: MCP server that instruments AI agent tool calls and emits telemetry
 
 ### 2. Favor typed contracts
 Use strong typing and schema validation for:
