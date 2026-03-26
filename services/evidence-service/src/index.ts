@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { closePool } from '@tracereplay/common';
 import { bundlesRoutes } from './routes/bundles.js';
+import { exportRoutes } from './routes/export.js';
 
 const PORT = Number(process.env['PORT'] ?? 3006);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
@@ -19,6 +20,7 @@ export async function buildApp() {
 
   // Register routes
   await app.register(bundlesRoutes, { prefix: '/v1' });
+  await app.register(exportRoutes, { prefix: '/v1' });
 
   return app;
 }
