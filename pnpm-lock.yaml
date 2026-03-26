@@ -258,6 +258,40 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@25.5.0)(jsdom@25.0.1)
 
+  services/evidence-service:
+    dependencies:
+      '@tracereplay/common':
+        specifier: workspace:*
+        version: link:../../packages/common
+      '@tracereplay/event-schema':
+        specifier: workspace:*
+        version: link:../../packages/event-schema
+      '@tracereplay/graph-model':
+        specifier: workspace:*
+        version: link:../../packages/graph-model
+      '@tracereplay/redaction':
+        specifier: workspace:*
+        version: link:../../packages/redaction
+      '@tracereplay/replay-engine':
+        specifier: workspace:*
+        version: link:../../packages/replay-engine
+      fastify:
+        specifier: ^5.0.0
+        version: 5.8.2
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      tsx:
+        specifier: ^4.0.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@25.5.0)(jsdom@25.0.1)
+
   services/ingest-api:
     dependencies:
       '@tracereplay/common':
