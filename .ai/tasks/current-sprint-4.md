@@ -12,7 +12,7 @@ Build the Evidence & Compliance layer so users can assemble audit-ready evidence
 
 | ID | Task | Status | Priority | Est |
 |----|------|--------|----------|-----|
-| F4-001 | Evidence service: assemble run evidence bundles | 🔲 | P0 | L |
+| F4-001 | Evidence service: assemble run evidence bundles | ✅ | P0 | L |
 | F4-002 | JSON export format for evidence bundles | 🔲 | P0 | M |
 | F4-003 | PDF summary generation for evidence bundles | 🔲 | P0 | L |
 | F4-004 | Evidence integrity hash chain | 🔲 | P0 | M |
