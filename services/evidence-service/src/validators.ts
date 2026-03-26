@@ -23,6 +23,12 @@ export const listBundlesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });
 
+export const exportQuerySchema = z.object({
+  format: z.enum(['json'], {
+    errorMap: () => ({ message: 'Unsupported export format. Supported: json' }),
+  }),
+});
+
 // ---------------------------------------------------------------------------
 // Inferred types
 // ---------------------------------------------------------------------------
@@ -31,3 +37,4 @@ export type CreateBundleBody = z.infer<typeof createBundleBodySchema>;
 export type BundleIdParam = z.infer<typeof bundleIdParamSchema>;
 export type BundlesByRunQuery = z.infer<typeof bundlesByRunQuerySchema>;
 export type ListBundlesQuery = z.infer<typeof listBundlesQuerySchema>;
+export type ExportQuery = z.infer<typeof exportQuerySchema>;
