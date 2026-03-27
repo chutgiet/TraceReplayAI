@@ -3,6 +3,7 @@ import { getPool } from '@tracereplay/common';
 import { getBundleById } from '../repository.js';
 import { bundleIdParamSchema, exportQuerySchema } from '../validators.js';
 import { EvidenceJsonExporter, ExportError } from '../exporters/json-exporter.js';
+import { EvidencePdfExporter, PdfExportError } from '../exporters/pdf-exporter.js';
 import { JSON_EXPORT_MIME_TYPE } from '../export-types.js';
 
 // ---------------------------------------------------------------------------
@@ -74,7 +75,11 @@ export async function exportRoutes(app: FastifyInstance): Promise<void> {
 
       // Export based on format
       if (format === 'json') {
-        return await exportJson(row.bundle_data, bundleId, request.id, reply);
+        return await exportJson(row.bundle_data, request.id, reply);
+      }
+
+      if (format === 'pdf') {
+        return await exportPdf(row.bundle_data, request, reply);
       }
 
       // Unreachable due to Zod enum validation, but TypeScript exhaustiveness
@@ -86,7 +91,7 @@ export async function exportRoutes(app: FastifyInstance): Promise<void> {
         },
       });
     } catch (err) {
-      if (err instanceof ExportError) {
+      if (err instanceof ExportError || err instanceof PdfExportError) {
         return reply.status(422).send({
           error: {
             code: err.code,
@@ -112,12 +117,12 @@ export async function exportRoutes(app: FastifyInstance): Promise<void> {
 // Format-specific export helpers
 // ---------------------------------------------------------------------------
 
-import type { FastifyReply } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { EvidenceBundle } from '../types.js';
+import type { PdfExportOptions } from '../exporters/pdf-exporter.js';
 
 async function exportJson(
   bundle: EvidenceBundle,
-  bundleId: string,
   requestId: string,
   reply: FastifyReply,
 ): Promise<void> {
@@ -131,4 +136,37 @@ async function exportJson(
     .header('content-disposition', `attachment; filename="${filename}"`)
     .header('x-request-id', requestId)
     .send(json);
+}
+
+async function exportPdf(
+  bundle: EvidenceBundle,
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  // Parse optional query params for PDF configuration
+  const query = request.query as Record<string, string | undefined>;
+  const options: PdfExportOptions = {};
+
+  if (query['detail'] === 'full') {
+    options.detailLevel = 'full';
+  }
+
+  if (query['sections']) {
+    options.sections = query['sections'].split(',').filter(Boolean) as PdfExportOptions['sections'];
+  }
+
+  if (query['pageSize'] === 'LETTER') {
+    options.pageSize = 'LETTER';
+  }
+
+  const exporter = new EvidencePdfExporter(options);
+  const pdfBuffer = await exporter.export(bundle);
+  const filename = EvidencePdfExporter.generateFilename(bundle);
+
+  return reply
+    .status(200)
+    .header('content-type', 'application/pdf')
+    .header('content-disposition', `attachment; filename="${filename}"`)
+    .header('x-request-id', request.id)
+    .send(pdfBuffer);
 }

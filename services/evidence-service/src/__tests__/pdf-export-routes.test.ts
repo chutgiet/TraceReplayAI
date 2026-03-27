@@ -3,7 +3,6 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { exportRoutes } from '../routes/export.js';
 import type { BundleRow, EvidenceBundle } from '../types.js';
 import { BUNDLE_SCHEMA_VERSION } from '../types.js';
-import { EXPORT_SCHEMA_VERSION } from '../export-types.js';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -65,9 +64,21 @@ function makeCompleteBundleData(): EvidenceBundle {
       {
         id: 'a0000001-0000-4000-8000-000000000002',
         runId: RUN_ID,
+        type: 'tool.call.start',
+        timestamp: '2026-03-15T10:00:02.000Z',
+        sequence: 2,
+        tenantId: TENANT_ID,
+        sourceAgent: 'test-agent',
+        payload: { toolName: 'read_file', args: { path: '/tmp/test.ts' } },
+        tags: ['test'],
+        schemaVersion: '1.0.0',
+      },
+      {
+        id: 'a0000001-0000-4000-8000-000000000003',
+        runId: RUN_ID,
         type: 'run.end',
         timestamp: '2026-03-15T10:00:05.000Z',
-        sequence: 2,
+        sequence: 3,
         tenantId: TENANT_ID,
         sourceAgent: 'test-agent',
         payload: { status: 'success', durationMs: 4000 },
@@ -81,11 +92,11 @@ function makeCompleteBundleData(): EvidenceBundle {
       summary: {
         runId: RUN_ID,
         tenantId: TENANT_ID,
-        eventCount: 2,
+        eventCount: 3,
+        eventTypeCounts: { 'run.start': 1, 'tool.call.start': 1, 'run.end': 1 },
         durationMs: 4000,
-        eventTypeCounts: { 'run.start': 1, 'run.end': 1 },
         hasGaps: false,
-        toolCount: 0,
+        toolCount: 1,
         hasErrors: false,
       },
     } as unknown as EvidenceBundle['timeline'],
@@ -115,10 +126,18 @@ function makeBundleRow(overrides: Partial<BundleRow> = {}): BundleRow {
 }
 
 // ---------------------------------------------------------------------------
+// PDF magic bytes check
+// ---------------------------------------------------------------------------
+
+function isPdfBuffer(buf: Buffer): boolean {
+  return buf.length >= 5 && buf.toString('ascii', 0, 5) === '%PDF-';
+}
+
+// ---------------------------------------------------------------------------
 // Test suite
 // ---------------------------------------------------------------------------
 
-describe('export routes', () => {
+describe('PDF export routes', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -133,86 +152,73 @@ describe('export routes', () => {
   });
 
   // -----------------------------------------------------------------------
-  // GET /v1/evidence/bundles/:bundleId/export?format=json
+  // GET /v1/evidence/bundles/:bundleId/export?format=pdf
   // -----------------------------------------------------------------------
-  describe('GET /v1/evidence/bundles/:bundleId/export?format=json', () => {
-    it('returns 200 with JSON export and correct headers', async () => {
+  describe('GET /v1/evidence/bundles/:bundleId/export?format=pdf', () => {
+    it('returns 200 with PDF content and correct headers', async () => {
       mockGetBundleById.mockResolvedValue(makeBundleRow());
 
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf`,
       });
 
       expect(response.statusCode).toBe(200);
-
-      // Check content type
-      expect(response.headers['content-type']).toContain('application/json');
-
-      // Check content-disposition for file download
+      expect(response.headers['content-type']).toBe('application/pdf');
       expect(response.headers['content-disposition']).toContain('attachment');
-      expect(response.headers['content-disposition']).toContain('.json');
+      expect(response.headers['content-disposition']).toContain('.pdf');
 
-      // Verify the body is valid JSON export
-      const body = JSON.parse(response.body);
-      expect(body.formatId).toBe('tracereplay-evidence-export');
-      expect(body.schemaVersion).toBe(EXPORT_SCHEMA_VERSION);
-      expect(body.integrityHash).toBeDefined();
-      expect(typeof body.integrityHash).toBe('string');
+      const buf = Buffer.from(response.rawPayload);
+      expect(isPdfBuffer(buf)).toBe(true);
     });
 
-    it('includes all required export fields', async () => {
+    it('includes run ID in the content-disposition filename', async () => {
       mockGetBundleById.mockResolvedValue(makeBundleRow());
 
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf`,
       });
 
-      const body = JSON.parse(response.body);
-      expect(body).toHaveProperty('formatId');
-      expect(body).toHaveProperty('schemaVersion');
-      expect(body).toHaveProperty('exportedAt');
-      expect(body).toHaveProperty('bundle');
-      expect(body).toHaveProperty('run');
-      expect(body).toHaveProperty('events');
-      expect(body).toHaveProperty('timeline');
-      expect(body).toHaveProperty('lineage');
-      expect(body).toHaveProperty('redactionAudit');
-      expect(body).toHaveProperty('integrityHash');
+      const disposition = response.headers['content-disposition'] as string;
+      expect(disposition).toContain(RUN_ID);
+      expect(disposition).toContain('evidence-');
     });
 
-    it('returns 400 for invalid bundleId', async () => {
+    it('supports full detail level via query param', async () => {
+      mockGetBundleById.mockResolvedValue(makeBundleRow());
+
       const response = await app.inject({
         method: 'GET',
-        url: '/v1/evidence/bundles/not-a-uuid/export?format=json',
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf&detail=full`,
       });
 
-      expect(response.statusCode).toBe(400);
-      const body = JSON.parse(response.body);
-      expect(body.error.code).toBe('INVALID_BUNDLE_ID');
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
     });
 
-    it('returns 400 when format query param is missing', async () => {
+    it('supports sections parameter', async () => {
+      mockGetBundleById.mockResolvedValue(makeBundleRow());
+
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf&sections=executiveSummary,runMetadata`,
       });
 
-      expect(response.statusCode).toBe(400);
-      const body = JSON.parse(response.body);
-      expect(body.error.code).toBe('INVALID_EXPORT_FORMAT');
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
     });
 
-    it('returns 400 for unsupported format', async () => {
+    it('supports LETTER page size parameter', async () => {
+      mockGetBundleById.mockResolvedValue(makeBundleRow());
+
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=csv`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf&pageSize=LETTER`,
       });
 
-      expect(response.statusCode).toBe(400);
-      const body = JSON.parse(response.body);
-      expect(body.error.code).toBe('INVALID_EXPORT_FORMAT');
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
     });
 
     it('returns 404 when bundle not found', async () => {
@@ -220,7 +226,7 @@ describe('export routes', () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf`,
       });
 
       expect(response.statusCode).toBe(404);
@@ -235,7 +241,7 @@ describe('export routes', () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf`,
       });
 
       expect(response.statusCode).toBe(422);
@@ -256,7 +262,7 @@ describe('export routes', () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf`,
       });
 
       expect(response.statusCode).toBe(422);
@@ -264,12 +270,23 @@ describe('export routes', () => {
       expect(body.error.code).toBe('BUNDLE_NOT_COMPLETE');
     });
 
-    it('returns 500 for unexpected DB errors', async () => {
+    it('returns 400 for invalid bundleId', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/v1/evidence/bundles/not-a-uuid/export?format=pdf',
+      });
+
+      expect(response.statusCode).toBe(400);
+      const body = JSON.parse(response.body);
+      expect(body.error.code).toBe('INVALID_BUNDLE_ID');
+    });
+
+    it('returns 500 for unexpected errors', async () => {
       mockGetBundleById.mockRejectedValue(new Error('Connection lost'));
 
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf`,
       });
 
       expect(response.statusCode).toBe(500);
@@ -277,20 +294,43 @@ describe('export routes', () => {
       expect(body.error.code).toBe('EXPORT_FAILED');
     });
 
-    it('sets content-disposition filename with run ID', async () => {
+    it('sets x-request-id header', async () => {
       mockGetBundleById.mockResolvedValue(makeBundleRow());
 
       const response = await app.inject({
         method: 'GET',
-        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=pdf`,
       });
 
-      const disposition = response.headers['content-disposition'] as string;
-      expect(disposition).toContain(RUN_ID);
-      expect(disposition).toContain('evidence-');
+      expect(response.headers['x-request-id']).toBeDefined();
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Format validation still works for both json and pdf
+  // -----------------------------------------------------------------------
+  describe('format validation', () => {
+    it('returns 400 for unsupported format', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=csv`,
+      });
+
+      expect(response.statusCode).toBe(400);
+      const body = JSON.parse(response.body);
+      expect(body.error.code).toBe('INVALID_EXPORT_FORMAT');
     });
 
-    it('produces JSON that passes round-trip validation', async () => {
+    it('returns 400 when format is missing', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/v1/evidence/bundles/${BUNDLE_ID}/export`,
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('still supports json format after adding pdf', async () => {
       mockGetBundleById.mockResolvedValue(makeBundleRow());
 
       const response = await app.inject({
@@ -298,17 +338,8 @@ describe('export routes', () => {
         url: `/v1/evidence/bundles/${BUNDLE_ID}/export?format=json`,
       });
 
-      const parsed = JSON.parse(response.body);
-
-      // Import and validate
-      const { EvidenceJsonExporter } = await import('../exporters/json-exporter.js');
-      const result = EvidenceJsonExporter.validate(parsed);
-      expect(result.valid).toBe(true);
-
-      // Verify integrity
-      if (result.valid) {
-        expect(EvidenceJsonExporter.verifyIntegrity(result.data)).toBe(true);
-      }
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['content-type']).toContain('application/json');
     });
   });
 });

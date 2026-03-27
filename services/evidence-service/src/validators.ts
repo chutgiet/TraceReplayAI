@@ -24,8 +24,8 @@ export const listBundlesQuerySchema = z.object({
 });
 
 export const exportQuerySchema = z.object({
-  format: z.enum(['json'], {
-    errorMap: () => ({ message: 'Unsupported export format. Supported: json' }),
+  format: z.enum(['json', 'pdf'], {
+    errorMap: () => ({ message: 'Unsupported export format. Supported: json, pdf' }),
   }),
 });
 

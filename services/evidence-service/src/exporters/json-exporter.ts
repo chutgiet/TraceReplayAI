@@ -6,6 +6,7 @@ import {
   EXPORT_SCHEMA_VERSION,
   evidenceJsonExportSchema,
 } from '../export-types.js';
+import type { ReplayTimeline, TimelineEntry, RunSummary, TimelineGap } from '@tracereplay/replay-engine';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -53,6 +54,87 @@ function extractBundleMetadata(bundle: EvidenceBundle): ExportBundleMetadata {
     partialRunMarker: bundle.partialRunMarker,
     bundleSchemaVersion: bundle.bundleSchemaVersion,
   };
+}
+
+/**
+ * Map runtime TimelineEntry to export schema shape.
+ * Export schema requires: event, depth, durationMs, isGapBoundary.
+ */
+function mapTimelineEntry(
+  entry: TimelineEntry,
+  gapBoundaryEventIds: Set<string>,
+): EvidenceJsonExport['timeline'] extends { entries: (infer E)[] } | null ? E : never {
+  return {
+    event: entry.event,
+    depth: entry.depth,
+    durationMs: entry.durationMs ?? null,
+    isGapBoundary: gapBoundaryEventIds.has(entry.event.id),
+  } as never;
+}
+
+/**
+ * Map runtime RunSummary to export schema shape.
+ * Export schema requires: totalEvents, totalDurationMs, eventTypeCounts, maxDepth, gapCount, hasErrors.
+ */
+function mapRunSummary(
+  summary: RunSummary,
+  entries: TimelineEntry[],
+  gaps: TimelineGap[],
+): EvidenceJsonExport['timeline'] extends { summary: infer S } | null ? S : never {
+  const maxDepth = entries.reduce((max, e) => Math.max(max, e.depth), 0);
+  return {
+    totalEvents: summary.eventCount,
+    totalDurationMs: summary.durationMs ?? null,
+    eventTypeCounts: summary.eventTypeCounts as Record<string, number>,
+    maxDepth,
+    gapCount: gaps.length,
+    hasErrors: summary.hasErrors,
+  } as never;
+}
+
+/**
+ * Map a runtime TimelineGap to the export schema shape.
+ * Export schema requires: beforeEventId, afterEventId, gapMs, type, expectedSequence?, actualSequence?.
+ */
+function mapTimelineGap(gap: TimelineGap): Record<string, unknown> {
+  return {
+    beforeEventId: gap.relatedEventIds[0] ?? null,
+    afterEventId: gap.relatedEventIds[1] ?? null,
+    gapMs: 0,
+    type: gap.type,
+  };
+}
+
+/**
+ * Map the runtime ReplayTimeline to the export schema shape,
+ * or return null if no timeline is available.
+ */
+function mapTimelineForExport(
+  timeline: ReplayTimeline | null,
+): EvidenceJsonExport['timeline'] {
+  if (!timeline) return null;
+
+  const gapBoundaryEventIds = new Set<string>();
+  for (const gap of timeline.gaps) {
+    if ('relatedEventIds' in gap) {
+      for (const id of (gap as TimelineGap).relatedEventIds) {
+        gapBoundaryEventIds.add(id);
+      }
+    }
+  }
+
+  const entries = timeline.entries.map((e) => mapTimelineEntry(e as TimelineEntry, gapBoundaryEventIds));
+  const mappedGaps = timeline.gaps.map((g) => mapTimelineGap(g as TimelineGap));
+
+  return {
+    entries,
+    gaps: mappedGaps,
+    summary: mapRunSummary(
+      timeline.summary as RunSummary,
+      timeline.entries as TimelineEntry[],
+      timeline.gaps as TimelineGap[],
+    ),
+  } as unknown as EvidenceJsonExport['timeline'];
 }
 
 // ---------------------------------------------------------------------------
@@ -191,8 +273,8 @@ export class EvidenceJsonExporter {
       exportedAt: now,
       bundle: extractBundleMetadata(bundle),
       run: bundle.runMetadata,
-      events: bundle.events,
-      timeline: bundle.timeline,
+      events: bundle.events as unknown as EvidenceJsonExport['events'],
+      timeline: mapTimelineForExport(bundle.timeline),
       lineage: bundle.lineageGraph,
       redactionAudit: bundle.redactionAudit,
     };

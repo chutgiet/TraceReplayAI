@@ -14,7 +14,7 @@ Build the Evidence & Compliance layer so users can assemble audit-ready evidence
 |----|------|--------|----------|-----|
 | F4-001 | Evidence service: assemble run evidence bundles | ✅ | P0 | L |
 | F4-002 | JSON export format for evidence bundles | ✅ | P0 | M |
-| F4-003 | PDF summary generation for evidence bundles | 🔲 | P0 | L |
+| F4-003 | PDF summary generation for evidence bundles | ✅ | P0 | L |
 | F4-004 | Evidence integrity hash chain | 🔲 | P0 | M |
 | F4-005 | Side-effect tracking and visualization | 🔲 | P1 | L |
 | F4-006 | Query service: search by tool, side effect, error type | 🔲 | P1 | M |

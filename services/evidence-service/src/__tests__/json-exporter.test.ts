@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import type { TraceReplayEvent, EventId, RunId, TenantId, EventType } from '@tracereplay/event-schema';
 import type { ReplayTimeline } from '@tracereplay/replay-engine';
 import type { SerializedLineageGraph } from '@tracereplay/graph-model';
@@ -11,7 +11,6 @@ import {
 } from '../exporters/json-exporter.js';
 import {
   EXPORT_SCHEMA_VERSION,
-  evidenceJsonExportSchema,
 } from '../export-types.js';
 import type { EvidenceJsonExport } from '../export-types.js';
 
@@ -47,17 +46,20 @@ function makeTimeline(events: TraceReplayEvent[]): ReplayTimeline {
   return {
     entries: events.map((e, i) => ({
       event: e,
+      index: i,
       depth: 0,
-      durationMs: i === 0 ? null : 1000,
-      isGapBoundary: false,
+      childEventIds: [],
+      durationMs: i === 0 ? undefined : 1000,
     })),
     gaps: [],
     summary: {
-      totalEvents: events.length,
-      totalDurationMs: 5000,
+      runId: RUN_ID as unknown as import('@tracereplay/event-schema').RunId,
+      tenantId: TENANT_ID as unknown as import('@tracereplay/event-schema').TenantId,
+      eventCount: events.length,
       eventTypeCounts: { 'run.start': 1, 'prompt.input': 1, 'run.end': 1 },
-      maxDepth: 0,
-      gapCount: 0,
+      durationMs: 5000,
+      hasGaps: false,
+      toolCount: 0,
       hasErrors: false,
     },
   };
