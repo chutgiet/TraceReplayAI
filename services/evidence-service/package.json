@@ -15,15 +15,17 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@tracereplay/event-schema": "workspace:*",
     "@tracereplay/common": "workspace:*",
-    "@tracereplay/replay-engine": "workspace:*",
+    "@tracereplay/event-schema": "workspace:*",
     "@tracereplay/graph-model": "workspace:*",
     "@tracereplay/redaction": "workspace:*",
+    "@tracereplay/replay-engine": "workspace:*",
     "fastify": "^5.0.0",
+    "pdfkit": "^0.18.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.17.5",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"
