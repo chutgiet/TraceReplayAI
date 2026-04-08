@@ -1,0 +1,45 @@
+# TraceReplay AI — OpenTelemetry Collector Configuration
+# Receives Copilot Chat / Codex / Claude OTel traces and forwards to ingest-api
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 100
+    send_batch_max_size: 500
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 256
+    spike_limit_mib: 64
+
+exporters:
+  # Forward traces to TraceReplay ingest-api OTLP endpoint
+  otlphttp/tracereplay:
+    endpoint: http://ingest-api:3001
+    tls:
+      insecure: true
+
+  # Debug logging (disable in production)
+  debug:
+    verbosity: basic
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp/tracereplay, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp/tracereplay, debug]
+  telemetry:
+    logs:
+      level: info

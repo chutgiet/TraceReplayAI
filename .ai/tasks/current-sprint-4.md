@@ -1,4 +1,6 @@
-# TraceReplay AI — Sprint: Foundation-4
+# TraceReplay AI — Sprint: Foundation-4 ⏸️ PAUSED
+
+## Status: PAUSED — Remaining tasks merged into Sprint Core-1
 
 ## Goal
 Build the Evidence & Compliance layer so users can assemble audit-ready evidence bundles from runs, export them in JSON/PDF, and verify integrity. Also add side-effect tracking, advanced query filters, and production-readiness foundations (health checks, CI/CD, structured logging).
@@ -8,26 +10,27 @@ Build the Evidence & Compliance layer so users can assemble audit-ready evidence
 
 ---
 
-## Tasks
+## Completed tasks
 
-| ID | Task | Status | Priority | Est |
-|----|------|--------|----------|-----|
-| F4-001 | Evidence service: assemble run evidence bundles | ✅ | P0 | L |
-| F4-002 | JSON export format for evidence bundles | ✅ | P0 | M |
-| F4-003 | PDF summary generation for evidence bundles | ✅ | P0 | L |
-| F4-004 | Evidence integrity hash chain | 🔲 | P0 | M |
-| F4-005 | Side-effect tracking and visualization | 🔲 | P1 | L |
-| F4-006 | Query service: search by tool, side effect, error type | 🔲 | P1 | M |
-| F4-007 | Health check endpoints on all services | 🔲 | P1 | S |
-| F4-008 | CI/CD pipeline (GitHub Actions) | 🔲 | P1 | M |
-| F4-009 | Structured logging with correlation IDs | 🔲 | P2 | M |
-| F4-010 | Auto-instrumentation helpers for SDK | 🔲 | P2 | M |
-| F4-011 | LangGraph/LangChain adapter | 🔲 | P2 | L |
-| F4-012 | Evidence UI: bundle viewer and export controls | 🔲 | P2 | M |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| F4-001 | Evidence service: assemble run evidence bundles | ✅ | — |
+| F4-002 | JSON export format for evidence bundles | ✅ | — |
+| F4-003 | PDF summary generation for evidence bundles | ✅ | — |
 
-Est: S = small (< half day), M = medium (half–full day), L = large (1–2 days)
+## Remaining tasks — moved to Sprint Core-1
 
----
+| ID | Task | Moved to | Tier |
+|----|------|----------|------|
+| F4-004 | Evidence integrity hash chain | Core-1 Tier 1 | Finish evidence trio |
+| F4-007 | Health check endpoints on all services | Core-1 Tier 2 | Infra for new services |
+| F4-008 | CI/CD pipeline (GitHub Actions) | Core-1 Tier 2 | — |
+| F4-009 | Structured logging with correlation IDs | Core-1 Tier 2 | Needed for OTel debugging |
+| F4-005 | Side-effect tracking and visualization | Core-1 Tier 3 | — |
+| F4-006 | Query service: search by tool, side effect, error type | Core-1 Tier 3 | — |
+| F4-010 | Auto-instrumentation helpers for SDK | Deferred | SDK polish, not critical |
+| F4-011 | LangGraph/LangChain adapter | Deferred | No OTel from LangChain yet |
+| F4-012 | Evidence UI: bundle viewer and export controls | Deferred | Needs data flowing first |
 
 ## Task details
 

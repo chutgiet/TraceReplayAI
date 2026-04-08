@@ -2,5 +2,15 @@
     "sarif-viewer.connectToGithubCodeScanning": "off",
     "chat.tools.terminal.autoApprove": {
         "pnpm": true
-    }
+    },
+
+    // --- TraceReplay OTel Capture (VS Code Copilot → TraceReplay pipeline) ---
+    // Enable OpenTelemetry export from Copilot Chat
+    "github.copilot.chat.otel.enabled": true,
+    // Use HTTP-based OTLP exporter
+    "github.copilot.chat.otel.exporterType": "otlp-http",
+    // Point at OTel Collector (Docker) — change to http://localhost:3001 for direct ingest-api
+    "github.copilot.chat.otel.otlpEndpoint": "http://localhost:4318",
+    // Capture full prompt/response content for audit-grade traces
+    "github.copilot.chat.otel.captureContent": true
 }

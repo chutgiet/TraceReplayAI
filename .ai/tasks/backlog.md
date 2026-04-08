@@ -1,5 +1,34 @@
 # TraceReplay AI — Backlog
 
+## Priority: CRITICAL (Core Feature — Sprint Core-1)
+
+### OpenTelemetry Native Ingestion ⭐ CORE FEATURE
+- [ ] OTel Collector service in Docker Compose (gRPC :4317, HTTP :4318)
+- [ ] OTLP HTTP receiver endpoint in ingest-api (`POST /v1/traces`)
+- [ ] OTel Span → canonical event adapter (`OTelSpanAdapter` in connectors-core)
+- [ ] GenAI semantic convention full mapping (spans, metrics, events)
+- [ ] VS Code Copilot OTel settings profile and documentation
+- [ ] OTLP metrics endpoint (`POST /v1/metrics`) + run_metrics table
+- [ ] OTel context propagation in MCP server (unified traces)
+- [ ] Integration test: Copilot OTel → ingest → normalize → replay
+- [ ] OTel adapter extensions for Codex/Claude (vendor auto-detection)
+
+### Ollama Post-Processing Pipeline ⭐ CORE FEATURE
+- [ ] Ollama processor service (DeepSeek R1 background enrichment)
+- [ ] Ollama Docker integration (with host fallback)
+- [ ] BullMQ enrichment queue (run-summary, anomaly-check, compliance-scan)
+- [ ] Run summary generation after `run.end` events
+- [ ] Anomaly detection (excessive failures, abnormal token usage, long gaps)
+- [ ] Compliance scanning (sensitive data, unauthorized tool use)
+- [ ] Semantic tagging and event classification
+- [ ] Graceful degradation when Ollama unavailable
+
+### MCP Server Enhancements
+- [ ] OTel trace context propagation (`traceparent` / `tracestate`)
+- [ ] Unified traces: MCP tool calls + Copilot internal reasoning in one timeline
+
+---
+
 ## Priority: High
 
 ### Ingestion & Schema
@@ -44,15 +73,21 @@
 - [x] Shared UI component library
 
 ### Evidence & Compliance
-- [ ] Evidence bundle assembly from run data
-- [ ] JSON export format
-- [ ] PDF summary generation
+- [x] Evidence bundle assembly from run data
+- [x] JSON export format
+- [x] PDF summary generation
 - [ ] Evidence integrity hash chain
 - [x] Redaction engine with configurable rules
 
 ---
 
 ## Priority: Low (Future)
+
+### Deferred from Core-1 sprint
+- [ ] OTel Codex/Claude adapter extensions (vendor auto-detection, speculative)
+- [ ] Auto-instrumentation helpers for SDK (SDK polish, not critical path)
+- [ ] LangGraph/LangChain adapter (no OTel from LangChain yet)
+- [ ] Evidence UI: bundle viewer and export controls (needs data flowing first)
 
 ### Enterprise
 - [ ] Multi-tenant data isolation
@@ -85,7 +120,7 @@
 - Run diffing / comparison tool
 - Cost tracking and attribution per run
 - Natural language investigation queries
-- Automated anomaly detection on runs
+- Automated anomaly detection on runs (→ moved to Ollama processor in Core-1)
 - Connector marketplace
 - Python SDK
 - CLI tool for local development

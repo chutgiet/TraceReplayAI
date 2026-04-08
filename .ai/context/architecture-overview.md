@@ -2,9 +2,22 @@
 
 ## System architecture
 
-TraceReplay AI follows a modular monorepo architecture with clear service boundaries, shared packages, and a unidirectional event flow.
+TraceReplay AI follows a modular monorepo architecture with clear service boundaries, shared packages, and a unidirectional event flow. The **core extraction points** are OpenTelemetry native ingestion (from VS Code Copilot, Codex, Claude) and the MCP server for instrumented tool calls.
 
 ```
+┌─────────────────────────────────────────────────────┐
+│     VS Code Copilot / OpenAI Codex / Claude Code    │
+│     (OTel enabled: spans, metrics, events)          │
+└──────────────────────┬──────────────────────────────┘
+                       │ OTLP (HTTP :4318 / gRPC :4317)
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│              OTel Collector (Docker)                 │
+│  receivers: otlp · processors: batch, memory_limiter│
+│  exporters: otlphttp → ingest-api, debug            │
+└──────────────────────┬──────────────────────────────┘
+                       │ OTLP HTTP
+                       ▼
 ┌─────────────────────────────────────────────────────┐
 │                    SDK / Adapters                   │
 │  TypeScript SDK · Python SDK · OTel Exporter        │
@@ -14,6 +27,8 @@ TraceReplay AI follows a modular monorepo architecture with clear service bounda
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │                    Ingest API                       │
+│  POST /v1/traces (OTLP) · POST /v1/raw-events      │
+│  POST /v1/events · POST /v1/metrics (OTLP)         │
 │  Validates, deduplicates, queues raw events         │
 └──────────────────────┬──────────────────────────────┘
                        │ Message Queue (BullMQ + Redis)
@@ -21,25 +36,27 @@ TraceReplay AI follows a modular monorepo architecture with clear service bounda
 ┌─────────────────────────────────────────────────────┐
 │                    Normalizer                       │
 │  Maps vendor telemetry → canonical event model      │
+│  OTelSpanAdapter · GitHubCopilotAdapter · etc.      │
 └──────────────────────┬──────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
 │                  Event Store                        │
 │  Append-only canonical events + metadata            │
-└──────┬──────────┬──────────┬────────────────────────┘
-       │          │          │
-       ▼          ▼          ▼
-┌──────────┐ ┌──────────┐ ┌──────────┐
-│  Replay  │ │ Lineage  │ │ Evidence │
-│  Engine  │ │  Graph   │ │ Service  │
-└──────────┘ └──────────┘ └──────────┘
-       │          │          │
-       ▼          ▼          ▼
-┌─────────────────────────────────────────────────────┐
-│                  Query Service                      │
-│  Investigation API, search, filtering               │
-└──────────────────────┬──────────────────────────────┘
+└──────┬──────────┬──────────┬──────────┬─────────────┘
+       │          │          │          │
+       ▼          ▼          ▼          ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────────┐
+│  Replay  │ │ Lineage  │ │ Evidence │ │   Ollama    │
+│  Engine  │ │  Graph   │ │ Service  │ │  Processor  │
+└──────────┘ └──────────┘ └──────────┘ │ (DeepSeek)  │
+       │          │          │          │ Summaries · │
+       ▼          ▼          ▼          │ Anomalies · │
+┌─────────────────────────────────────┐ │ Compliance  │
+│                  Query Service      │ └──────┬──────┘
+│  Investigation API, search,         │        │
+│  filtering, metrics                 │◄───────┘
+└──────────────────────┬──────────────┘ annotation events
                        │
                        ▼
 ┌─────────────────────────────────────────────────────┐
