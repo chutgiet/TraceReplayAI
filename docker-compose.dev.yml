@@ -83,3 +83,8 @@ services:
       - ./packages/ui/src:/app/packages/ui/src:ro
     environment:
       NODE_ENV: development
+
+  otel-collector:
+    environment:
+      # Detailed logging in dev — shows full span and metric payloads
+      OTEL_DEBUG_VERBOSITY: detailed

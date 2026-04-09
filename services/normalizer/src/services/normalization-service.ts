@@ -9,6 +9,7 @@ import {
   OpenAICodexAdapter,
   GitHubCopilotAdapter,
   ClaudeCodeAdapter,
+  OTelSpanAdapter,
 } from '@tracereplay/connectors-core';
 import type { NormalizerStats } from '../types.js';
 
@@ -39,6 +40,7 @@ export class NormalizationService {
     registry.register(new OpenAICodexAdapter());
     registry.register(new GitHubCopilotAdapter());
     registry.register(new ClaudeCodeAdapter());
+    registry.register(new OTelSpanAdapter());
     return registry;
   }
 

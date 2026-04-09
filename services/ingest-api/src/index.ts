@@ -3,6 +3,7 @@ import { closePool } from '@tracereplay/common';
 import type { ConnectionOptions } from 'bullmq';
 import { ingestRoutes } from './routes/ingest.js';
 import { rawEventsRoutes } from './routes/raw-events.js';
+import { otlpTracesRoutes } from './routes/otlp-traces.js';
 
 const PORT = Number(process.env['PORT'] ?? 3001);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
@@ -34,6 +35,7 @@ export async function buildApp() {
   // Register routes
   await app.register(ingestRoutes, { prefix: '/v1' });
   await app.register(rawEventsRoutes, { prefix: '/v1', redis: getRedisConnection() });
+  await app.register(otlpTracesRoutes, { prefix: '/v1', redis: getRedisConnection() });
 
   return app;
 }
