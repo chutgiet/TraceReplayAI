@@ -1,45 +1,119 @@
 # TraceReplay AI — OpenTelemetry Collector Configuration
-# Receives Copilot Chat / Codex / Claude OTel traces and forwards to ingest-api
+# Receives Copilot Chat / Codex / Claude OTel traces and forwards to ingest-api.
+#
+# Signals handled:
+#   - Traces  (GenAI semantic convention spans)
+#   - Metrics (token counters, latency histograms)
+#   - Logs    (OTel log events from VS Code Copilot)
+#
+# Collector image: otel/opentelemetry-collector-contrib
+# Docs: https://opentelemetry.io/docs/collector/configuration/
 
+# ---------------------------------------------------------------------------
+# Extensions
+# ---------------------------------------------------------------------------
+extensions:
+  # Health check endpoint — Docker Compose probes GET http://localhost:13133/
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  # zPages debug UI at http://localhost:55679/debug/tracez (dev only)
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+# ---------------------------------------------------------------------------
+# Receivers
+# ---------------------------------------------------------------------------
 receivers:
   otlp:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
+        max_recv_msg_size_mib: 4
       http:
         endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://localhost:*"
+            - "https://localhost:*"
+            - "vscode-webview://*"
+          allowed_headers:
+            - "*"
+          max_age: 7200
 
+# ---------------------------------------------------------------------------
+# Processors
+# ---------------------------------------------------------------------------
 processors:
-  batch:
-    timeout: 5s
-    send_batch_size: 100
-    send_batch_max_size: 500
+  # Memory safety — drop data before OOM
   memory_limiter:
     check_interval: 5s
     limit_mib: 256
     spike_limit_mib: 64
 
+  # Batch for throughput — flush every 5 s or at 200 items
+  batch:
+    timeout: 5s
+    send_batch_size: 200
+    send_batch_max_size: 500
+
+  # Tag every signal with the deployment environment
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: "local"
+        action: upsert
+      - key: tracereplay.collector.version
+        value: "1.0.0"
+        action: upsert
+
+# ---------------------------------------------------------------------------
+# Exporters
+# ---------------------------------------------------------------------------
 exporters:
-  # Forward traces to TraceReplay ingest-api OTLP endpoint
+  # Forward to TraceReplay ingest-api OTLP endpoint (POST /v1/traces, /v1/metrics, /v1/logs)
   otlphttp/tracereplay:
     endpoint: http://ingest-api:3001
     tls:
       insecure: true
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 1000
 
-  # Debug logging (disable in production)
+  # Debug logging — set verbosity via OTEL_DEBUG_VERBOSITY env var (basic | normal | detailed)
   debug:
     verbosity: basic
 
+# ---------------------------------------------------------------------------
+# Service — pipelines & telemetry
+# ---------------------------------------------------------------------------
 service:
+  extensions: [health_check, zpages]
+
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, resource, batch]
       exporters: [otlphttp/tracereplay, debug]
+
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, resource, batch]
       exporters: [otlphttp/tracereplay, debug]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/tracereplay, debug]
+
   telemetry:
     logs:
       level: info
+    metrics:
+      address: 0.0.0.0:8888

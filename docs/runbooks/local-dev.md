@@ -5,7 +5,7 @@ Run the full TraceReplay AI stack locally with a single command.
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose v2)
-- Ports `3000–3004`, `5432`, `6379` available
+- Ports `3000–3006`, `4317–4318`, `5432`, `6379`, `11434` available
 
 ## Quick start
 
@@ -22,10 +22,16 @@ Once healthy, the services are available at:
 | Service | URL | Description |
 |---------|-----|-------------|
 | **Web UI** | http://localhost:3000 | Investigation & replay frontend |
-| **Ingest API** | http://localhost:3001 | `POST /v1/events`, `POST /v1/events/batch` |
+| **Ingest API** | http://localhost:3001 | `POST /v1/events`, `POST /v1/events/batch`, `POST /v1/traces` (OTLP) |
 | **Query Service** | http://localhost:3002 | `GET /v1/runs`, `/v1/events`, `/v1/search` |
 | **Normalizer** | http://localhost:3003 | Health: `GET /healthz`, stats: `GET /stats` |
 | **Worker** | http://localhost:3004 | Health: `GET /healthz`, stats: `GET /stats` |
+| **MCP Server** | http://localhost:3005 | SSE transport for AI agent telemetry capture |
+| **Evidence Service** | http://localhost:3006 | Evidence bundle assembly and export |
+| **OTel Collector** | http://localhost:4318 | OTLP HTTP receiver (also gRPC on `:4317`) |
+| **OTel Health** | http://localhost:13133 | Collector health check |
+| **OTel zPages** | http://localhost:55679/debug/tracez | Collector debug trace viewer |
+| **Ollama** | http://localhost:11434 | Local LLM (DeepSeek R1) for background enrichment |
 | **PostgreSQL** | localhost:5432 | User: `tracereplay` / Password: `tracereplay` |
 | **Redis** | localhost:6379 | No password (development) |
 
@@ -115,12 +121,65 @@ ingest-api          running (healthy)
 query-service       running (healthy)
 normalizer          running (healthy)
 worker              running (healthy)
+evidence-service    running (healthy)
+tracereplay-mcp     running (healthy)
+otel-collector      running (healthy)
+ollama              running (healthy)
 web                 running (healthy)
+```
+
+## OpenTelemetry Collector
+
+The OTel Collector receives OTLP traces, metrics, and logs from VS Code Copilot (and other OTel-enabled AI agents) and forwards them to the Ingest API.
+
+### Verify the collector is running
+
+```bash
+# Health check
+curl http://localhost:13133/
+
+# View active traces (zPages debug UI)
+open http://localhost:55679/debug/tracez
+```
+
+### View collector logs
+
+```bash
+docker compose logs -f otel-collector
+```
+
+In dev mode (`docker-compose.dev.yml`), the debug exporter uses `detailed` verbosity — every received span/metric is printed to stdout.
+
+### Enable VS Code Copilot OTel export
+
+See [Copilot OTel Setup](../connectors/copilot-otel-setup.md) for full instructions. Quick version:
+
+```json
+// .vscode/settings.json
+{
+  "github.copilot.chat.otel.enabled": true,
+  "github.copilot.chat.otel.exporterType": "otlp-http",
+  "github.copilot.chat.otel.otlpEndpoint": "http://localhost:4318",
+  "github.copilot.chat.otel.captureContent": true
+}
 ```
 
 ## Architecture overview
 
 ```
+┌──────────────────────┐
+│ VS Code Copilot Chat │
+│ (OTel-enabled)       │
+└──────────┬───────────┘
+           │ OTLP HTTP (:4318)
+           ▼
+┌──────────────────────┐
+│   OTel Collector     │──▶ zPages (:55679)
+│   :4317 (gRPC)      │──▶ Health (:13133)
+│   :4318 (HTTP)       │
+└──────────┬───────────┘
+           │ OTLP HTTP
+           ▼
 ┌─────────┐     ┌─────────────┐     ┌───────────────┐
 │   Web   │────▶│Query Service│────▶│  PostgreSQL    │
 │ :3000   │     │   :3002     │     │    :5432       │
@@ -142,6 +201,16 @@ web                 running (healthy)
 │   Worker    │───────────────────────────▶ PostgreSQL
 │   :3004     │
 └─────────────┘
+
+┌──────────────────┐    ┌─────────────┐
+│ TraceReplay MCP  │───▶│ Ingest API  │
+│     :3005        │    └─────────────┘
+└──────────────────┘
+
+┌──────────────────┐
+│     Ollama       │  (background enrichment)
+│    :11434        │
+└──────────────────┘
 ```
 
 ## Troubleshooting

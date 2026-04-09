@@ -243,10 +243,16 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.100.0
     ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
+      - "4317:4317"     # OTLP gRPC receiver
+      - "4318:4318"     # OTLP HTTP receiver
+      - "13133:13133"   # Health check extension
+      - "55679:55679"   # zPages debug UI (http://localhost:55679/debug/tracez)
+      - "8888:8888"     # Collector internal metrics (Prometheus)
     volumes:
       - ./infrastructure/otel/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    environment:
+      # Override debug exporter verbosity: basic | normal | detailed
+      OTEL_DEBUG_VERBOSITY: basic
     depends_on:
       ingest-api:
         condition: service_healthy
