@@ -25,7 +25,7 @@ Sprint Foundation-4 is paused (3/12 done). Remaining F4 tasks are merged here by
 | ID | Task | Status | Source | Est |
 |----|------|--------|--------|-----|
 | C1-001 | OTel Collector service in Docker Compose | ✅ | Core-1 | S |
-| C1-002 | OTLP HTTP receiver endpoint in ingest-api | 🔲 | Core-1 | L |
+| C1-002 | OTLP HTTP receiver endpoint in ingest-api | ✅ | Core-1 | L |
 | C1-003 | OTel Span → canonical event adapter (`OTelSpanAdapter`) | 🔲 | Core-1 | L |
 | C1-004 | VS Code settings profile for OTel export | 🔲 | Core-1 | S |
 | C1-006 | Ollama post-processing service (DeepSeek) | 🔲 | Core-1 | L |
