@@ -363,6 +363,34 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@25.5.0)(jsdom@25.0.1)
 
+  services/ollama-processor:
+    dependencies:
+      '@tracereplay/common':
+        specifier: workspace:*
+        version: link:../../packages/common
+      '@tracereplay/event-schema':
+        specifier: workspace:*
+        version: link:../../packages/event-schema
+      bullmq:
+        specifier: ^5.0.0
+        version: 5.71.0
+      fastify:
+        specifier: ^5.0.0
+        version: 5.8.2
+    devDependencies:
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
+      tsx:
+        specifier: ^4.0.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@25.5.0)(jsdom@25.0.1)
+
   services/query-service:
     dependencies:
       '@tracereplay/common':
