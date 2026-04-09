@@ -39,3 +39,4 @@ export { OpenAIAgentsAdapter } from './openai-agents-adapter.js';
 export { OpenAICodexAdapter } from './openai-codex-adapter.js';
 export { GitHubCopilotAdapter } from './github-copilot-adapter.js';
 export { ClaudeCodeAdapter } from './claude-code-adapter.js';
+export { OTelSpanAdapter } from './otel-span-adapter.js';
