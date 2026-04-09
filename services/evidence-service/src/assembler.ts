@@ -32,6 +32,7 @@ import {
   insertBundle,
   updateBundleStatus,
 } from './repository.js';
+import { computeIntegrityChain } from './integrity.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -200,6 +201,10 @@ export class EvidenceBundleAssembler {
       // Step 5: Build redaction audit
       const redactionAudit = buildRedactionAudit(events);
 
+      // Step 5b: Compute integrity hash chain
+      const { chain: integrityChain, rootHash: rootIntegrityHash } =
+        computeIntegrityChain(events);
+
       // Step 6: Assemble the bundle
       const bundle: EvidenceBundle = {
         id: bundleId,
@@ -218,6 +223,8 @@ export class EvidenceBundleAssembler {
           ? `Run ${request.runId} was still in progress (status: ${run.status}) at assembly time ${now}`
           : null,
         errorMessage: null,
+        integrityChain,
+        rootIntegrityHash: rootIntegrityHash || null,
         bundleSchemaVersion: BUNDLE_SCHEMA_VERSION,
       };
 
@@ -244,6 +251,8 @@ export class EvidenceBundleAssembler {
         isPartialRun: false,
         partialRunMarker: null,
         errorMessage: message,
+        integrityChain: null,
+        rootIntegrityHash: null,
         bundleSchemaVersion: BUNDLE_SCHEMA_VERSION,
       };
 

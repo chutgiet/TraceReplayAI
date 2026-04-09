@@ -2,6 +2,7 @@ import type { TraceReplayEvent } from '@tracereplay/event-schema';
 import type { ReplayTimeline } from '@tracereplay/replay-engine';
 import type { RedactionRecord } from '@tracereplay/redaction';
 import type { SerializedLineageGraph } from '@tracereplay/graph-model';
+import type { IntegrityChainEntry } from './integrity.js';
 
 // ---------------------------------------------------------------------------
 // Bundle IDs
@@ -89,6 +90,10 @@ export interface EvidenceBundle {
   partialRunMarker: string | null;
   /** Error message if assembly failed. */
   errorMessage: string | null;
+  /** Per-event integrity hash chain (tamper-evident). */
+  integrityChain: IntegrityChainEntry[] | null;
+  /** Root hash of the integrity chain (covers all events). */
+  rootIntegrityHash: string | null;
   /** Schema version of this bundle format. */
   bundleSchemaVersion: string;
 }
@@ -112,6 +117,7 @@ export interface BundleRow {
   error_message: string | null;
   bundle_data: EvidenceBundle | null;
   bundle_schema_version: string;
+  root_integrity_hash: string | null;
 }
 
 /** Subset for INSERT — omits DB-defaulted columns. */
@@ -124,6 +130,7 @@ export interface InsertBundleRow {
   error_message?: string | null;
   bundle_data?: EvidenceBundle | null;
   bundle_schema_version: string;
+  root_integrity_hash?: string | null;
 }
 
 // ---------------------------------------------------------------------------

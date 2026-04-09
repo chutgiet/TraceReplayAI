@@ -149,6 +149,8 @@ function makeCompleteBundle(overrides: Partial<EvidenceBundle> = {}): EvidenceBu
     isPartialRun: false,
     partialRunMarker: null,
     errorMessage: null,
+    integrityChain: null,
+    rootIntegrityHash: null,
     bundleSchemaVersion: BUNDLE_SCHEMA_VERSION,
     ...overrides,
   };

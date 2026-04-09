@@ -29,7 +29,7 @@ Sprint Foundation-4 is paused (3/12 done). Remaining F4 tasks are merged here by
 | C1-003 | OTel Span → canonical event adapter (`OTelSpanAdapter`) | ✅ | Core-1 | L |
 | C1-004 | VS Code settings profile for OTel export | ✅ | Core-1 | S |
 | C1-006 | Ollama post-processing service (DeepSeek) | ✅ | Core-1 | L |
-| F4-004 | Evidence integrity hash chain | 🔲 | F4 | M |
+| F4-004 | Evidence integrity hash chain | ✅ | F4 | M |
 
 ### Tier 2 — Do NEXT (full mapping + infrastructure)
 
