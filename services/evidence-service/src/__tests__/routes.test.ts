@@ -73,9 +73,12 @@ function makeBundleRow(overrides: Partial<BundleRow> = {}): BundleRow {
       isPartialRun: false,
       partialRunMarker: null,
       errorMessage: null,
+      integrityChain: null,
+      rootIntegrityHash: null,
       bundleSchemaVersion: BUNDLE_SCHEMA_VERSION,
     } as unknown as EvidenceBundle,
     bundle_schema_version: BUNDLE_SCHEMA_VERSION,
+    root_integrity_hash: null,
     created_at: new Date('2026-03-15T10:00:00.000Z'),
     completed_at: new Date('2026-03-15T10:00:01.000Z'),
     ...overrides,
@@ -121,6 +124,8 @@ describe('bundles routes', () => {
         isPartialRun: false,
         partialRunMarker: null,
         errorMessage: null,
+        integrityChain: null,
+        rootIntegrityHash: null,
         bundleSchemaVersion: BUNDLE_SCHEMA_VERSION,
       };
 

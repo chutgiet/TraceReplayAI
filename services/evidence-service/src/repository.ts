@@ -17,10 +17,11 @@ export async function insertBundle(
   const result = await pool.query<BundleRow>(
     `INSERT INTO evidence_bundles (
        id, run_id, tenant_id, status, is_partial_run,
-       error_message, bundle_data, bundle_schema_version
+       error_message, bundle_data, bundle_schema_version,
+       root_integrity_hash
      ) VALUES (
        $1, $2, $3, $4, $5,
-       $6, $7, $8
+       $6, $7, $8, $9
      )
      RETURNING *`,
     [
@@ -32,6 +33,7 @@ export async function insertBundle(
       bundle.error_message ?? null,
       bundle.bundle_data ? JSON.stringify(bundle.bundle_data) : null,
       bundle.bundle_schema_version,
+      bundle.root_integrity_hash ?? null,
     ],
   );
 
@@ -55,7 +57,8 @@ export async function updateBundleStatus(
          completed_at = $3,
          bundle_data = $4,
          error_message = $5,
-         is_partial_run = $6
+         is_partial_run = $6,
+         root_integrity_hash = $7
      WHERE id = $1`,
     [
       id,
@@ -64,6 +67,7 @@ export async function updateBundleStatus(
       bundleData ? JSON.stringify(bundleData) : null,
       errorMessage,
       bundleData?.isPartialRun ?? false,
+      bundleData?.rootIntegrityHash ?? null,
     ],
   );
 }

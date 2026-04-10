@@ -28,6 +28,7 @@ function makeBundleRow(): BundleRow {
     error_message: null,
     bundle_data: null,
     bundle_schema_version: BUNDLE_SCHEMA_VERSION,
+    root_integrity_hash: null,
     created_at: new Date('2026-03-15T10:00:00.000Z'),
     completed_at: new Date('2026-03-15T10:00:01.000Z'),
   };

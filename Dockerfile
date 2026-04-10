@@ -22,6 +22,7 @@ COPY services/query-service/package.json services/query-service/
 COPY services/worker/package.json services/worker/
 COPY services/evidence-service/package.json services/evidence-service/
 COPY services/tracereplay-mcp/package.json services/tracereplay-mcp/
+COPY services/ollama-processor/package.json services/ollama-processor/
 COPY tests/package.json tests/
 
 RUN pnpm install --frozen-lockfile
@@ -63,6 +64,7 @@ COPY --from=build /app/services/query-service ./services/query-service
 COPY --from=build /app/services/worker ./services/worker
 COPY --from=build /app/services/evidence-service ./services/evidence-service
 COPY --from=build /app/services/tracereplay-mcp ./services/tracereplay-mcp
+COPY --from=build /app/services/ollama-processor ./services/ollama-processor
 
 # Copy migration scripts
 COPY --from=build /app/infrastructure ./infrastructure
