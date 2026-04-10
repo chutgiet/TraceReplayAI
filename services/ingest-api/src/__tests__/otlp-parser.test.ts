@@ -305,7 +305,7 @@ describe('parseOtlpTraces', () => {
     const result = parseOtlpTraces(validated);
 
     expect(result.spanCount).toBe(1);
-    const span = result.spans[0];
+    const span = result.spans[0]!;
     expect(span.name).toBe('test-span');
     expect(span.parentSpanId).toBe('');
     expect(span.kind).toBe(0);

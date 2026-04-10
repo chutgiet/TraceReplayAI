@@ -197,9 +197,9 @@ describe('OTelSpanAdapter', () => {
       expect(start.tenantId).toBe('tenant-otel-001');
       expect(start.tags).toContain('otel-copilot');
       expect(start.tags).toContain('otel');
-      expect((start.payload as Record<string, unknown>)['runName']).toBe('copilot-workspace');
-      expect((start.payload as Record<string, unknown>)['triggerSource']).toBe('agent');
-      expect((start.payload as Record<string, unknown>)['configuration']).toEqual({
+      expect((start.payload as unknown as Record<string, unknown>)['runName']).toBe('copilot-workspace');
+      expect((start.payload as unknown as Record<string, unknown>)['triggerSource']).toBe('agent');
+      expect((start.payload as unknown as Record<string, unknown>)['configuration']).toEqual({
         serviceVersion: '1.42.0',
         sessionId: 'session-abc',
         agentDescription: 'Generated PR review',
@@ -207,9 +207,9 @@ describe('OTelSpanAdapter', () => {
 
       // run.end payload
       expect(end.type).toBe('run.end');
-      expect((end.payload as Record<string, unknown>)['status']).toBe('success');
-      expect((end.payload as Record<string, unknown>)['durationMs']).toBe(5000);
-      expect((end.payload as Record<string, unknown>)['summary']).toBe('Generated PR review');
+      expect((end.payload as unknown as Record<string, unknown>)['status']).toBe('success');
+      expect((end.payload as unknown as Record<string, unknown>)['durationMs']).toBe(5000);
+      expect((end.payload as unknown as Record<string, unknown>)['summary']).toBe('Generated PR review');
 
       // run.end.parentEventId links back to start
       expect(end.parentEventId).toBe(start.id);
@@ -224,7 +224,7 @@ describe('OTelSpanAdapter', () => {
       if (result.status !== 'success') return;
 
       const start = result.events.find((e) => e.type === 'run.start')!;
-      expect((start.payload as Record<string, unknown>)['runName']).toBe('invoke_agent');
+      expect((start.payload as unknown as Record<string, unknown>)['runName']).toBe('invoke_agent');
     });
 
     it('preserves trace context: runId from traceId, eventId from spanId', () => {
@@ -301,17 +301,17 @@ describe('OTelSpanAdapter', () => {
       expect(errorEvents).toHaveLength(1);
 
       const error = errorEvents[0]!;
-      expect((error.payload as Record<string, unknown>)['errorType']).toBe('SpanError');
-      expect((error.payload as Record<string, unknown>)['errorMessage']).toBe('Agent crashed: OOM');
-      expect((error.payload as Record<string, unknown>)['stackTrace']).toBe(
+      expect((error.payload as unknown as Record<string, unknown>)['errorType']).toBe('SpanError');
+      expect((error.payload as unknown as Record<string, unknown>)['errorMessage']).toBe('Agent crashed: OOM');
+      expect((error.payload as unknown as Record<string, unknown>)['stackTrace']).toBe(
         'at Agent.run(agent.ts:42)\n  at main(index.ts:10)',
       );
-      expect((error.payload as Record<string, unknown>)['fatal']).toBe(false);
+      expect((error.payload as unknown as Record<string, unknown>)['fatal']).toBe(false);
       expect(error.tags).toContain('error');
 
       // run.end should show failure status
       const end = result.events.find((e) => e.type === 'run.end')!;
-      expect((end.payload as Record<string, unknown>)['status']).toBe('failure');
+      expect((end.payload as unknown as Record<string, unknown>)['status']).toBe('failure');
     });
 
     it('also matches "agent.invoke" span name', () => {
@@ -358,14 +358,14 @@ describe('OTelSpanAdapter', () => {
       expect(response).toBeDefined();
 
       // model.request
-      const reqPayload = request.payload as Record<string, unknown>;
+      const reqPayload = request.payload as unknown as Record<string, unknown>;
       expect(reqPayload['modelProvider']).toBe('openai');
       expect(reqPayload['modelId']).toBe('gpt-4o');
       expect(reqPayload['inputTokens']).toBe(1200);
       expect(reqPayload['temperature']).toBe(0.7);
 
       // model.response
-      const resPayload = response.payload as Record<string, unknown>;
+      const resPayload = response.payload as unknown as Record<string, unknown>;
       expect(resPayload['modelProvider']).toBe('openai');
       expect(resPayload['modelId']).toBe('gpt-4o');
       expect(resPayload['inputTokens']).toBe(1200);
@@ -388,7 +388,7 @@ describe('OTelSpanAdapter', () => {
       if (result.status !== 'success') return;
 
       const request = result.events.find((e) => e.type === 'model.request')!;
-      expect((request.payload as Record<string, unknown>)['modelProvider']).toBe('anthropic');
+      expect((request.payload as unknown as Record<string, unknown>)['modelProvider']).toBe('anthropic');
     });
 
     it('uses "unknown" when model not in attributes', () => {
@@ -401,7 +401,7 @@ describe('OTelSpanAdapter', () => {
       if (result.status !== 'success') return;
 
       const request = result.events.find((e) => e.type === 'model.request')!;
-      expect((request.payload as Record<string, unknown>)['modelId']).toBe('unknown');
+      expect((request.payload as unknown as Record<string, unknown>)['modelId']).toBe('unknown');
     });
 
     it('handles alternative token attribute names (prompt_tokens/completion_tokens)', () => {
@@ -417,7 +417,7 @@ describe('OTelSpanAdapter', () => {
       if (result.status !== 'success') return;
 
       const response = result.events.find((e) => e.type === 'model.response')!;
-      const payload = response.payload as Record<string, unknown>;
+      const payload = response.payload as unknown as Record<string, unknown>;
       expect(payload['inputTokens']).toBe(800);
       expect(payload['outputTokens']).toBe(200);
     });
@@ -490,13 +490,13 @@ describe('OTelSpanAdapter', () => {
       expect(end).toBeDefined();
 
       // tool.call.start
-      const startPayload = start.payload as Record<string, unknown>;
+      const startPayload = start.payload as unknown as Record<string, unknown>;
       expect(startPayload['toolName']).toBe('read_file');
       expect(startPayload['toolId']).toBe('tool-rf-001');
       expect(startPayload['inputParameters']).toEqual({ path: '/src/index.ts' });
 
       // tool.call.end
-      const endPayload = end.payload as Record<string, unknown>;
+      const endPayload = end.payload as unknown as Record<string, unknown>;
       expect(endPayload['toolName']).toBe('read_file');
       expect(endPayload['toolId']).toBe('tool-rf-001');
       expect(endPayload['output']).toEqual({ content: 'file contents' });
@@ -516,7 +516,7 @@ describe('OTelSpanAdapter', () => {
       if (result.status !== 'success') return;
 
       const start = result.events.find((e) => e.type === 'tool.call.start')!;
-      expect((start.payload as Record<string, unknown>)['toolName']).toBe('execute_tool');
+      expect((start.payload as unknown as Record<string, unknown>)['toolName']).toBe('execute_tool');
     });
 
     it('collects gen_ai.tool.* attributes as inputParameters', () => {
@@ -532,7 +532,7 @@ describe('OTelSpanAdapter', () => {
       if (result.status !== 'success') return;
 
       const start = result.events.find((e) => e.type === 'tool.call.start')!;
-      const params = (start.payload as Record<string, unknown>)['inputParameters'] as Record<string, unknown>;
+      const params = (start.payload as unknown as Record<string, unknown>)['inputParameters'] as Record<string, unknown>;
       expect(params['query']).toBe('find all tests');
       expect(params['limit']).toBe(10);
     });
@@ -550,7 +550,7 @@ describe('OTelSpanAdapter', () => {
       expect(errorEvents).toHaveLength(1);
 
       const error = errorEvents[0]!;
-      const payload = error.payload as Record<string, unknown>;
+      const payload = error.payload as unknown as Record<string, unknown>;
       expect(payload['toolName']).toBe('write_file');
       expect(payload['errorType']).toBe('ToolCallError');
       expect(payload['errorMessage']).toBe('Permission denied: /etc/passwd');
@@ -558,7 +558,7 @@ describe('OTelSpanAdapter', () => {
 
       // tool.call.end should have success: false
       const end = result.events.find((e) => e.type === 'tool.call.end')!;
-      expect((end.payload as Record<string, unknown>)['success']).toBe(false);
+      expect((end.payload as unknown as Record<string, unknown>)['success']).toBe(false);
     });
 
     it('produces tool.call.start only when no end time', () => {
@@ -612,13 +612,13 @@ describe('OTelSpanAdapter', () => {
       expect(annotation.type).toBe('annotation');
       expect(annotation.tags).toContain('unmapped');
 
-      const payload = annotation.payload as Record<string, unknown>;
+      const payload = annotation.payload as unknown as Record<string, unknown>;
       expect(payload['key']).toBe('otel.span');
       expect(payload['annotatedBy']).toBe('opentelemetry');
 
       const value = payload['value'] as Record<string, unknown>;
       expect(value['name']).toBe('http.request');
-      expect((value['attributes'] as Record<string, unknown>)['http.method']).toBe('GET');
+      expect((value['attributes'] as unknown as Record<string, unknown>)['http.method']).toBe('GET');
     });
   });
 
@@ -644,7 +644,7 @@ describe('OTelSpanAdapter', () => {
         attributes: { 'gen_ai.request.model': 'gpt-4' },
       });
       // Remove runId if set by helper
-      delete (raw as Record<string, unknown>)['runId'];
+      delete (raw as unknown as Record<string, unknown>)['runId'];
 
       const result = adapter.normalize(raw);
       if (result.status !== 'success') return;
@@ -692,7 +692,7 @@ describe('OTelSpanAdapter', () => {
       if (result.status !== 'success') return;
 
       const response = result.events.find((e) => e.type === 'model.response')!;
-      expect((response.payload as Record<string, unknown>)['latencyMs']).toBe(2500);
+      expect((response.payload as unknown as Record<string, unknown>)['latencyMs']).toBe(2500);
     });
 
     it('handles missing nano timestamps gracefully', () => {
@@ -707,7 +707,7 @@ describe('OTelSpanAdapter', () => {
 
       const response = result.events.find((e) => e.type === 'model.response');
       if (response) {
-        expect((response.payload as Record<string, unknown>)['latencyMs']).toBeUndefined();
+        expect((response.payload as unknown as Record<string, unknown>)['latencyMs']).toBeUndefined();
       }
     });
   });
@@ -725,7 +725,7 @@ describe('OTelSpanAdapter', () => {
       const result = adapter.normalize(raw);
       if (result.status !== 'success') return;
       const req = result.events.find((e) => e.type === 'model.request')!;
-      expect((req.payload as Record<string, unknown>)['modelProvider']).toBe('openai');
+      expect((req.payload as unknown as Record<string, unknown>)['modelProvider']).toBe('openai');
     });
 
     it('detects anthropic from claude service name', () => {
@@ -737,7 +737,7 @@ describe('OTelSpanAdapter', () => {
       const result = adapter.normalize(raw);
       if (result.status !== 'success') return;
       const req = result.events.find((e) => e.type === 'model.request')!;
-      expect((req.payload as Record<string, unknown>)['modelProvider']).toBe('anthropic');
+      expect((req.payload as unknown as Record<string, unknown>)['modelProvider']).toBe('anthropic');
     });
 
     it('detects google from gemini service name', () => {
@@ -749,7 +749,7 @@ describe('OTelSpanAdapter', () => {
       const result = adapter.normalize(raw);
       if (result.status !== 'success') return;
       const req = result.events.find((e) => e.type === 'model.request')!;
-      expect((req.payload as Record<string, unknown>)['modelProvider']).toBe('google');
+      expect((req.payload as unknown as Record<string, unknown>)['modelProvider']).toBe('google');
     });
 
     it('falls back to vendor map for unknown service name', () => {
@@ -761,7 +761,7 @@ describe('OTelSpanAdapter', () => {
       const result = adapter.normalize(raw);
       if (result.status !== 'success') return;
       const req = result.events.find((e) => e.type === 'model.request')!;
-      expect((req.payload as Record<string, unknown>)['modelProvider']).toBe('openai');
+      expect((req.payload as unknown as Record<string, unknown>)['modelProvider']).toBe('openai');
     });
   });
 
@@ -905,9 +905,9 @@ describe('OTelSpanAdapter', () => {
       ];
 
       // All share the same runId
-      const runIds = new Set(allEvents.map((e) => e.runId));
+      const runIds = new Set(allEvents.map((e) => e.runId as unknown as string));
       expect(runIds.size).toBe(1);
-      expect(runIds.has(traceId as unknown as string)).toBe(true);
+      expect(runIds.has(traceId)).toBe(true);
 
       // Event type counts
       const typeCounts = allEvents.reduce(
@@ -927,7 +927,7 @@ describe('OTelSpanAdapter', () => {
 
       // Agent span duration
       const runEnd = allEvents.find((e) => e.type === 'run.end')!;
-      expect((runEnd.payload as Record<string, unknown>)['durationMs']).toBe(30000);
+      expect((runEnd.payload as unknown as Record<string, unknown>)['durationMs']).toBe(30000);
 
       // Child spans reference the parent
       const chat1Events = chat1Result.events;

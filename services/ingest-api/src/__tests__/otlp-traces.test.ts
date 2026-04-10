@@ -119,7 +119,7 @@ describe('POST /v1/traces', () => {
     });
 
     expect(mockAddBulk).toHaveBeenCalledTimes(1);
-    const jobs = mockAddBulk.mock.calls[0][0];
+    const jobs = mockAddBulk.mock.calls[0]![0]!;
     expect(jobs).toHaveLength(2); // invoke_agent + chat
 
     // Verify job structure
@@ -139,7 +139,7 @@ describe('POST /v1/traces', () => {
       payload: makeCopilotTracePayload(),
     });
 
-    const jobs = mockAddBulk.mock.calls[0][0];
+    const jobs = mockAddBulk.mock.calls[0]![0]!;
     for (const job of jobs) {
       expect(job.data.rawEvent.runId).toBe('abcdef1234567890abcdef1234567890');
     }
@@ -152,7 +152,7 @@ describe('POST /v1/traces', () => {
       payload: makeCopilotTracePayload(),
     });
 
-    const jobs = mockAddBulk.mock.calls[0][0];
+    const jobs = mockAddBulk.mock.calls[0]![0]!;
     for (const job of jobs) {
       expect(job.data.rawEvent.tenantId).toBe('org-tracereplay-dev');
     }
@@ -166,7 +166,7 @@ describe('POST /v1/traces', () => {
       payload: makeCopilotTracePayload(),
     });
 
-    const jobs = mockAddBulk.mock.calls[0][0];
+    const jobs = mockAddBulk.mock.calls[0]![0]!;
     for (const job of jobs) {
       expect(job.data.rawEvent.tenantId).toBe('my-org-123');
     }
@@ -300,7 +300,7 @@ describe('POST /v1/traces', () => {
       payload: makeCopilotTracePayload(),
     });
 
-    const jobs = mockAddBulk.mock.calls[0][0];
+    const jobs = mockAddBulk.mock.calls[0]![0]!;
     const chatJob = jobs.find(
       (j: { data: { rawEvent: { data: Record<string, unknown> } } }) =>
         j.data.rawEvent.data['name'] === 'chat',
@@ -320,7 +320,7 @@ describe('POST /v1/traces', () => {
       payload: makeCopilotTracePayload(),
     });
 
-    const jobs = mockAddBulk.mock.calls[0][0];
+    const jobs = mockAddBulk.mock.calls[0]![0]!;
     const resAttrs = jobs[0].data.rawEvent.data['resourceAttributes'] as Record<string, unknown>;
     expect(resAttrs['service.name']).toBe('copilot-chat');
   });
@@ -335,7 +335,7 @@ describe('POST /v1/traces', () => {
     });
 
     const after = new Date().toISOString();
-    const jobs = mockAddBulk.mock.calls[0][0];
+    const jobs = mockAddBulk.mock.calls[0]![0]!;
     const receivedAt = jobs[0].data.rawEvent.receivedAt;
 
     expect(receivedAt >= before).toBe(true);

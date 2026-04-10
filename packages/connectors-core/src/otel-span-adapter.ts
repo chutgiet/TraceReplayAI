@@ -23,7 +23,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import type { EventType, TraceReplayEvent } from '@tracereplay/event-schema';
+import type { TraceReplayEvent } from '@tracereplay/event-schema';
 import type {
   NormalizerAdapter,
   NormalizationResult,
