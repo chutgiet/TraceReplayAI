@@ -85,7 +85,8 @@ export const exportTraceServiceRequestSchema = z.object({
   resourceSpans: z.array(otlpResourceSpansSchema).optional().default([]),
 });
 
-export type ExportTraceServiceRequest = z.infer<typeof exportTraceServiceRequestSchema>;
+export type ExportTraceServiceRequestInput = z.input<typeof exportTraceServiceRequestSchema>;
+export type ExportTraceServiceRequest = z.output<typeof exportTraceServiceRequestSchema>;
 
 // ---------------------------------------------------------------------------
 // Flattened span — the output of the parser

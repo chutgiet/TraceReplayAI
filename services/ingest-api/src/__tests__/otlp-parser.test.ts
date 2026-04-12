@@ -5,7 +5,7 @@ import {
   spanToRawEvent,
   detectVendor,
 } from '../parsers/otlp-parser.js';
-import type { ExportTraceServiceRequest } from '../parsers/otlp-parser.js';
+import type { ExportTraceServiceRequestInput } from '../parsers/otlp-parser.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures — realistic Copilot OTel trace
@@ -25,7 +25,7 @@ const CHAT_SPAN_ID = 'aaaa000000000002';
 const TOOL_SPAN_ID = 'aaaa000000000003';
 
 /** Simulates an ExportTraceServiceRequest from VS Code Copilot Chat. */
-function makeCopilotTraceRequest(): ExportTraceServiceRequest {
+function makeCopilotTraceRequest(): ExportTraceServiceRequestInput {
   return {
     resourceSpans: [
       {
@@ -114,7 +114,7 @@ function makeCopilotTraceRequest(): ExportTraceServiceRequest {
 }
 
 /** Minimal valid request with one span */
-function makeMinimalRequest(): ExportTraceServiceRequest {
+function makeMinimalRequest(): ExportTraceServiceRequestInput {
   return {
     resourceSpans: [
       {
@@ -134,6 +134,10 @@ function makeMinimalRequest(): ExportTraceServiceRequest {
       },
     ],
   };
+}
+
+function parseRequest(request: ExportTraceServiceRequestInput) {
+  return parseOtlpTraces(exportTraceServiceRequestSchema.parse(request));
 }
 
 // =========================================================================
@@ -198,8 +202,7 @@ describe('exportTraceServiceRequestSchema', () => {
 
 describe('parseOtlpTraces', () => {
   it('flattens 3 Copilot spans from nested structure', () => {
-    const request = makeCopilotTraceRequest();
-    const result = parseOtlpTraces(request);
+    const result = parseRequest(makeCopilotTraceRequest());
 
     expect(result.spanCount).toBe(3);
     expect(result.resourceCount).toBe(1);
@@ -207,8 +210,7 @@ describe('parseOtlpTraces', () => {
   });
 
   it('extracts resource attributes on every span', () => {
-    const request = makeCopilotTraceRequest();
-    const { spans } = parseOtlpTraces(request);
+    const { spans } = parseRequest(makeCopilotTraceRequest());
 
     for (const span of spans) {
       expect(span.resourceAttributes['service.name']).toBe('copilot-chat');
@@ -218,8 +220,8 @@ describe('parseOtlpTraces', () => {
   });
 
   it('extracts scope info on every span', () => {
-    const request = makeCopilotTraceRequest();
-    const { spans } = parseOtlpTraces(request);
+    const { spans } = parseRequest(makeCopilotTraceRequest());
+
 
     for (const span of spans) {
       expect(span.scopeName).toBe('@opentelemetry/instrumentation-copilot');
@@ -228,7 +230,7 @@ describe('parseOtlpTraces', () => {
   });
 
   it('preserves span-level attributes', () => {
-    const { spans } = parseOtlpTraces(makeCopilotTraceRequest());
+    const { spans } = parseRequest(makeCopilotTraceRequest());
 
     const agentSpan = spans.find((s) => s.name === 'invoke_agent')!;
     expect(agentSpan.attributes['gen_ai.agent.name']).toBe('copilot');
@@ -243,7 +245,7 @@ describe('parseOtlpTraces', () => {
   });
 
   it('preserves parent-child relationships', () => {
-    const { spans } = parseOtlpTraces(makeCopilotTraceRequest());
+    const { spans } = parseRequest(makeCopilotTraceRequest());
 
     const root = spans.find((s) => s.name === 'invoke_agent')!;
     expect(root.parentSpanId).toBe('');
@@ -256,16 +258,18 @@ describe('parseOtlpTraces', () => {
   });
 
   it('extracts span events', () => {
-    const { spans } = parseOtlpTraces(makeCopilotTraceRequest());
+    const { spans } = parseRequest(makeCopilotTraceRequest());
     const chatSpan = spans.find((s) => s.name === 'chat')!;
+    const event = chatSpan.events[0]!;
+
 
     expect(chatSpan.events).toHaveLength(1);
-    expect(chatSpan.events[0].name).toBe('gen_ai.content.prompt');
-    expect(chatSpan.events[0].attributes['gen_ai.prompt']).toBe('Explain this function');
+    expect(event.name).toBe('gen_ai.content.prompt');
+    expect(event.attributes['gen_ai.prompt']).toBe('Explain this function');
   });
 
   it('converts timestamps from nanos', () => {
-    const { spans } = parseOtlpTraces(makeCopilotTraceRequest());
+    const { spans } = parseRequest(makeCopilotTraceRequest());
     const root = spans.find((s) => s.name === 'invoke_agent')!;
 
     expect(root.startTimeUnixNano).toBe('1712000000000000000');
@@ -279,7 +283,7 @@ describe('parseOtlpTraces', () => {
   });
 
   it('handles multiple resource spans', () => {
-    const request: ExportTraceServiceRequest = {
+    const request: ExportTraceServiceRequestInput = {
       resourceSpans: [
         {
           resource: { attributes: [makeAttribute('service.name', 'copilot-chat')] },
@@ -293,11 +297,13 @@ describe('parseOtlpTraces', () => {
     };
     const validated = exportTraceServiceRequestSchema.parse(request);
     const result = parseOtlpTraces(validated);
+    const firstSpan = result.spans[0]!;
+    const secondSpan = result.spans[1]!;
 
     expect(result.spanCount).toBe(2);
     expect(result.resourceCount).toBe(2);
-    expect(result.spans[0].resourceAttributes['service.name']).toBe('copilot-chat');
-    expect(result.spans[1].resourceAttributes['service.name']).toBe('codex-cli');
+    expect(firstSpan.resourceAttributes['service.name']).toBe('copilot-chat');
+    expect(secondSpan.resourceAttributes['service.name']).toBe('codex-cli');
   });
 
   it('handles minimal span with defaults', () => {
