@@ -21,6 +21,7 @@ COPY services/query-service/package.json services/query-service/
 COPY services/worker/package.json services/worker/
 COPY services/evidence-service/package.json services/evidence-service/
 COPY services/tracereplay-mcp/package.json services/tracereplay-mcp/
+COPY services/ollama-processor/package.json services/ollama-processor/
 COPY apps/web/package.json apps/web/
 COPY tests/package.json tests/
 
