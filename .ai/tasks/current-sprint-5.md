@@ -1,4 +1,7 @@
-# TraceReplay AI — Sprint: Core-1 (OTel Capture + Ollama + Remaining F4)
+# TraceReplay AI — Sprint: Core-1 (OTel Capture + Ollama + Remaining F4) ⏸️ PAUSED
+
+## Status: PAUSED — Tier 1 complete (6/6 ✅); remaining tasks merged into Sprint Interception-1
+> ADR-0005 (transport-level interception) re-prioritized the roadmap. Still-relevant infra tasks (F4-007, F4-008, F4-009, C1-010) carry over to `current-sprint-6.md` Tier 4; C1-005/007/008/009/012 are deferred there. See `.ai/decisions/adr-0005-transport-interception.md`.
 
 ## Goal
 **This is the core feature of TraceReplay AI.** Stand up native OpenTelemetry ingestion so VS Code Copilot, OpenAI Codex, and other AI agents' telemetry flows directly into the canonical event pipeline. Add an OTel Collector to the stack, build the OTLP-to-canonical adapter, and wire Ollama (DeepSeek) for background post-processing/enrichment of captured traces. Also completes priority items from Foundation-4 (evidence integrity, health checks, CI/CD, logging).

@@ -2,7 +2,17 @@
 
 ## What is TraceReplay AI?
 
-TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI agents. It captures the full execution lifecycle of AI agent runs — prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects — and reconstructs them into replayable execution graphs.
+TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI agents. It captures the full execution lifecycle of AI agent runs — prompts, retrieved context, tool calls, approvals, outputs, errors, and downstream side effects — at the **transport level** (agent hooks, MCP/egress proxy, filesystem snapshots), records them as a tamper-evident decision ledger, and reconstructs them into replayable execution graphs.
+
+## Strategy: recorder first, control plane later (ADR-0005)
+
+Enforcement products die in the gap where a customer must author policy before receiving any value. TraceReplay inverts the sequence:
+
+1. **Record-only mode is the default** — zero configuration, no policy written. Installing it immediately yields a verifiable log of everything your agents did: a compliance artifact teams already need.
+2. **Enforcement is a switch flipped later** — on rules the product proposes from observed traffic, compiled to Cedar/Rego (never a proprietary DSL).
+3. **Deterministic replay is the moat** — policy gates are commoditizing (APort, Microsoft ACS/ASSERT, OPA adapters); faithful re-execution of agent runs is genuinely hard, unshipped by anyone, and what a litigator or regulator actually needs. That is a different buyer than the security engineer buying a gate.
+
+**Open-core split**: Apache 2.0 on the interceptor, ledger format, and replay engine — so the format can become a standard. Commercial layer: multi-tenant retention, external anchoring, evidence packs.
 
 ## Target users
 
@@ -22,7 +32,9 @@ TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI a
 4. **Drift detection** — Compare current behavior against previous runs or baselines
 5. **Lineage tracing** — Map the chain of data, decisions, and side effects across systems
 6. **Operational monitoring** — Track agent health, error rates, latency, and cost
-7. **Live development capture** — Capture AI coding agent sessions (Copilot, Codex, Claude Code) in real time via the MCP server for audit replay of development work
+7. **Live development capture** — Capture AI coding agent sessions (Copilot, Codex, Claude Code) via transport-level interception: native hooks, MCP/egress proxy, and filesystem ground-truth snapshots
+8. **Verifiable ground truth** — Prove what actually changed on disk (git tree hashes at turn boundaries), independent of what the tool log claims
+9. **Honest audit gaps** — Config attestation and explicit gap markers so an incomplete record says so, rather than looking clean
 
 ## Non-goals
 
@@ -30,8 +42,10 @@ TraceReplay AI is an audit-grade replay and lineage platform for enterprise AI a
 - We are NOT building an agent framework (use LangChain, CrewAI, AutoGen for that)
 - We are NOT building a prompt management tool (use PromptLayer, Humanloop for that)
 - We are NOT replacing APM (use New Relic, Dynatrace for that)
+- We are NOT inventing a policy language — enforcement compiles to Cedar or Rego (ADR-0005)
+- We are NOT building agent identity — we consume identity assertions (APort passport, Entra Agent ID), never issue them (ADR-0005)
 
-We are building the **forensic investigation and audit layer** for AI agent operations.
+We are building the **forensic investigation and audit layer** for AI agent operations — the recorder that becomes the control plane.
 
 ## Current MVP scope
 

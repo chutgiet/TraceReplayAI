@@ -45,38 +45,67 @@
 - [x] Sub-agent run linking
 - [x] TraceReplay MCP server for live AI agent session capture (stdio + SSE)
 
-## Milestone 4: Evidence + Compliance (Current)
+## Milestone 4: Evidence + Compliance (Partially complete — superseded by ADR-0005 re-plan)
 > Goal: Generate audit-ready evidence bundles and trace side effects
 
 - [x] `graph-model` package: lineage data structures
-- [ ] Side-effect tracking and visualization
 - [x] Parent-child run linking (sub-agent delegation)
-- [ ] Query service: search by tool, side effect, error type
-- [ ] `evidence-service`: assemble run evidence
-- [ ] Export formats: JSON, PDF summary
-- [ ] Evidence integrity hashing
-- [ ] Redaction audit trail
+- [x] `evidence-service`: assemble run evidence
+- [x] Export formats: JSON, PDF summary
+- [x] Evidence integrity hashing (retroactive chain — moves to write-time in M5)
+- [ ] Side-effect tracking and visualization (→ M5, sourced from Ring 3)
+- [ ] Query service: search by tool, side effect, error type (→ backlog)
+- [ ] Redaction audit trail (→ backlog)
 
-## Milestone 5: SDK Ecosystem + Operations
-> Goal: Broader agent framework support and production readiness
+## Milestone 5: Capture Integrity — Three-Ring Interception (CURRENT · ADR-0005)
+> Goal: Replace cooperative parallel-tool capture with transport-level interception and a tamper-evident decision ledger. Record-only mode, zero config.
 
-- [ ] Auto-instrumentation helpers for common patterns
-- [ ] LangGraph/LangChain adapter
-- [ ] Health check endpoints on all services
-- [ ] Prometheus metrics export
-- [ ] Structured logging across all services
-- [ ] CI/CD pipeline (GitHub Actions)
-- [ ] Deployment documentation
+- [ ] Decision record event schema: agent identity assertion, proposed action + full params, policy version hash, verdict, evidence refs, prior-record hash
+- [ ] Write-time hash chaining: `chain_hash` computed at persistence per run; evidence-service verifies stored chain
+- [ ] Ring 3 — filesystem ground truth: git tree hash snapshots (incl. untracked) at session start + turn boundaries, diff hashes in ledger
+- [ ] Configuration attestation: hash `settings.json` / `hooks.json` / `config.toml` at session start, chained into ledger
+- [ ] Explicit `capture.gap` markers whenever the expected capture chain is incomplete
+- [ ] Durable local event spool (replaces fire-and-forget emission)
+- [ ] Ring 1 — Claude Code hook pack: `PreToolUse` / `PostToolUse` / `PostToolUseFailure` / `SessionStart` / `Stop` → ledger
+- [ ] Ring 1 — Codex hooks (bash-only) + documented limitations
+- [ ] Deprecate parallel file/shell MCP tools; keep agent-facing API tools
 
-## Milestone 6: Enterprise Features (Future)
-> Goal: Multi-tenant, policy, access control
+## Milestone 6: Transport Spine — Ring 2 Proxy (Next)
+> Goal: Uniform coverage by construction, including runtime-discovered tools and raw model I/O
 
-- [ ] Multi-tenant isolation
+- [ ] MCP proxy: single interceptor server; rewrite real server entries through it (stdio + Streamable HTTP)
+- [ ] Tool discovery passthrough — coverage for tools discovered at runtime
+- [ ] Egress HTTPS proxy with local CA for model request/response capture (`HTTP_PROXY`/`HTTPS_PROXY`; Codex `[features.network_proxy]`)
+- [ ] Closes Codex file-write/MCP gaps and managed-chat gaps
+- [ ] ADR-0006: proxy architecture and trust model
+
+## Milestone 7: Deterministic Replay (The Moat)
+> Goal: Faithful re-execution of agent runs — rr-style, not observability-style
+
+- [ ] Capture all nondeterministic inputs: model responses, retrieval results, tool outputs, clock reads, seeds (requires M6)
+- [ ] Replay harness: re-execute a run against recorded inputs
+- [ ] Divergence detection: report where re-execution departs from the record
+- [ ] Evidence packs for the compliance/legal buyer
+
+## Milestone 8: Enforcement — The Switch (Future)
+> Goal: Become the control plane, already sitting on the wire
+
+- [ ] Policy gate at Ring 1 (`PreToolUse` deny) and Ring 2 (proxy block)
+- [ ] Policies compile to Cedar or Rego — no proprietary DSL
+- [ ] Local sidecar evaluation: sub-millisecond, fail-closed, no model in hot path
+- [ ] Rule proposals generated from observed traffic (flip-a-switch adoption)
+- [ ] Consume identity assertions (APort passport, Entra Agent ID) — never issue
+
+## Milestone 9: Enterprise Features (Future)
+> Goal: Multi-tenant, access control, operations at scale
+
+- [ ] Multi-tenant isolation + retention (commercial layer)
+- [ ] External anchoring of ledger root hashes (commercial layer)
 - [ ] RBAC: viewer, investigator, admin
-- [ ] Policy engine: rule-based evaluation
 - [ ] Retention policies and auto-purge
 - [ ] SIEM/SOAR integration connectors
 - [ ] SSO / SAML authentication
+- [ ] Deferred from old M5 (SDK Ecosystem + Ops): Prometheus metrics, deployment docs, LangGraph/LangChain adapter, auto-instrumentation helpers
 
 ---
 
