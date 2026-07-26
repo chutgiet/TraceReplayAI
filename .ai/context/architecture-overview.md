@@ -2,7 +2,52 @@
 
 ## System architecture
 
-TraceReplay AI follows a modular monorepo architecture with clear service boundaries, shared packages, and a unidirectional event flow. The **core extraction points** are OpenTelemetry native ingestion (from VS Code Copilot, Codex, Claude) and the MCP server for instrumented tool calls.
+TraceReplay AI follows a modular monorepo architecture with clear service boundaries, shared packages, and a unidirectional event flow. The **core extraction points** are the three-ring interception layer (native agent hooks, MCP/egress proxy, filesystem snapshots — see ADR-0005), OpenTelemetry native ingestion (from VS Code Copilot, Codex, Claude), and the MCP server for agent-facing query/approval APIs.
+
+## The capture layer: three rings (ADR-0005)
+
+Capture is layered in decreasing fidelity; no single ring covers every surface, so all three are required.
+
+```
+┌───────────────────────────────────────────────────────────┐
+│                     AGENT SURFACES                        │
+│   Claude Code CLI/desktop · Codex CLI/VS Code · chat      │
+└───────┬──────────────────┬─────────────────┬──────────────┘
+        │                  │                 │
+   RING 1: hooks      RING 2: proxy     RING 3: filesystem
+   PreToolUse/        MCP proxy in      git tree hash
+   PostToolUse        front of every    snapshots (incl.
+   (.claude/          real server +     untracked) at
+   settings.json,     egress HTTPS      session start and
+   .codex/hooks.json) proxy (model I/O) turn boundaries
+        │                  │                 │
+        └──────────────────┼─────────────────┘
+                           ▼
+              ┌─────────────────────────┐
+              │      DECISION LEDGER    │
+              │  decision records with  │
+              │  write-time hash chain, │
+              │  config attestation,    │
+              │  explicit gap markers   │
+              └────────────┬────────────┘
+                           │ (flows into standard pipeline)
+                           ▼
+                   Ingest API → Normalizer → Event Store
+```
+
+**Coverage matrix by surface:**
+
+| Surface | Tool gate | File writes | MCP calls | Model I/O |
+|---|---|---|---|---|
+| Claude Code CLI / desktop | Ring 1 hooks | Ring 1 hooks | Ring 1 hooks | Ring 2 only |
+| Codex CLI / VS Code | Ring 1 (bash only) | Ring 3 | Ring 2 | Ring 2 only |
+| Claude Code chat (managed) | none | Ring 3 | Ring 2 | none |
+
+**The decision record** is the atomic primitive: agent identity (consumed assertion), proposed action with full parameters, policy version content hash, verdict, evidence consumed, and the hash of the prior record — chained at write time, not retroactively. Enforcement writes it, audit reads it, one schema.
+
+**Honesty guarantees**: configuration attestation (hash of `settings.json` / `hooks.json` / `config.toml` chained in at session start) plus explicit `capture.gap` events whenever the expected capture chain is incomplete. A durable local spool replaces fire-and-forget emission so ingest outages produce late delivery, never silent loss.
+
+**Mode**: record-only by default (zero config, immediate audit value). Enforcement — a fail-closed local policy sidecar compiling to Cedar/Rego — is a later switch, flipped on rules proposed from observed traffic.
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -80,32 +125,32 @@ TraceReplay AI follows a modular monorepo architecture with clear service bounda
 
 ## MCP Server integration
 
-The **TraceReplay MCP Server** (`services/tracereplay-mcp/`) is an instrumented [Model Context Protocol](https://modelcontextprotocol.io) server that AI coding agents (GitHub Copilot, OpenAI Codex, Claude Code, etc.) connect to as a tool provider. Every tool invocation is automatically captured as telemetry and sent to the Ingest API, enabling audit-grade session capture of real development work.
+The **TraceReplay MCP Server** (`services/tracereplay-mcp/`) is a [Model Context Protocol](https://modelcontextprotocol.io) server that AI coding agents connect to. Per ADR-0005 its role is **reframed**: it is the agent-facing API surface (query history, record approvals, attach artifacts), not the primary capture mechanism. Its parallel file/shell tools are legacy — capture responsibility moves to the three rings, because parallel tools only record what the agent chooses to route through them.
 
 ### How it fits the architecture
 
-- **Acts as an SDK/Adapter**: The MCP server is an alternate ingestion path — instead of applications calling the TypeScript SDK, AI agents invoke MCP tools which auto-emit events.
-- **Feeds the standard pipeline**: Telemetry flows through the same Ingest API → Normalizer → Event Store pipeline as all other events.
-- **Queries existing data**: The MCP server also calls the Query Service to let agents browse past runs and replay timelines.
-- **Session lifecycle**: Each MCP connection creates a session (run) with `copilot.session.start` / `copilot.session.end` events. Individual tool calls emit `copilot.tool.invoke` / `copilot.tool.result` / `copilot.tool.error` events.
+- **Agent-facing APIs**: approvals, context snapshots, artifacts, and history queries are things hooks/proxies cannot provide — an agent must be able to proactively invoke them.
+- **Feeds the standard pipeline**: Emitted telemetry flows through the same Ingest API → Normalizer → Event Store pipeline as all other events.
+- **Queries existing data**: Calls the Query Service to let agents browse past runs and replay timelines.
+- **Session lifecycle**: Each MCP connection creates a session (run) with `copilot.session.start` / `copilot.session.end` events.
 
-### Available MCP tools
+### MCP tools by status
 
-| Tool | Purpose | Side effects |
+| Tool | Purpose | Status |
 |---|---|---|
-| `tracereplay_list_files` | List workspace files | None |
-| `tracereplay_read_file` | Read file contents | None |
-| `tracereplay_search_code` | Search code (git grep) | None |
-| `tracereplay_apply_patch` | Apply text replacement to a file | `file_write` |
-| `tracereplay_run_command` | Execute shell command | `shell_command` |
-| `tracereplay_git_status` | Check git status | None |
-| `tracereplay_git_diff` | View git diffs | None |
-| `tracereplay_record_approval` | Record human approval decision | None |
-| `tracereplay_snapshot_context` | Capture context snapshot | None |
-| `tracereplay_attach_artifact` | Attach artifact (diffs, test results) | None |
-| `tracereplay_finalize_session` | Mark session complete | None |
-| `tracereplay_query_runs` | Browse past captured sessions | None |
-| `tracereplay_query_timeline` | View replay timeline for a run | None |
+| `tracereplay_record_approval` | Record human approval decision | **Keep** — agent-facing API |
+| `tracereplay_snapshot_context` | Capture context snapshot | **Keep** — agent-facing API |
+| `tracereplay_attach_artifact` | Attach artifact (diffs, test results) | **Keep** — agent-facing API |
+| `tracereplay_finalize_session` | Mark session complete | **Keep** — session lifecycle |
+| `tracereplay_query_runs` | Browse past captured sessions | **Keep** — agent-facing API |
+| `tracereplay_query_timeline` | View replay timeline for a run | **Keep** — agent-facing API |
+| `tracereplay_list_files` | List workspace files | **Legacy** — superseded by Ring 1 |
+| `tracereplay_read_file` | Read file contents | **Legacy** — superseded by Ring 1 |
+| `tracereplay_search_code` | Search code (git grep) | **Legacy** — superseded by Ring 1 |
+| `tracereplay_apply_patch` | Apply text replacement to a file | **Legacy** — superseded by Rings 1+3 |
+| `tracereplay_run_command` | Execute shell command | **Legacy** — superseded by Rings 1+3 |
+| `tracereplay_git_status` | Check git status | **Legacy** — superseded by Ring 3 |
+| `tracereplay_git_diff` | View git diffs | **Legacy** — superseded by Ring 3 |
 
 ### Transport modes
 
@@ -196,7 +241,13 @@ tracereplay-mcp → @modelcontextprotocol/sdk, zod (standalone — emits to inge
 
 - **Append-only event store**: Events are immutable once persisted. Annotations and status are stored separately.
 - **Canonical event model**: All telemetry is normalized before storage. Raw payloads preserved as metadata.
+- **One primitive (ADR-0005)**: The decision record is the atomic unit — enforcement writes it, audit reads it, one schema. Not separate enforcement and audit subsystems reconciled later.
+- **Transport interception, not decorators (ADR-0005)**: Capture happens at hooks, proxy, and filesystem — coverage by construction, not by agent cooperation. The proxy is the spine; hooks are enrichment.
+- **Write-time hash chaining (ADR-0005)**: Each event's chain hash is computed at persistence, per run. The evidence-service chain becomes verification of the stored chain, not the source of truth.
+- **Honest gaps (ADR-0005)**: Config attestation at session start + explicit `capture.gap` markers. An audit record must distinguish "nothing happened" from "nothing was watching." Durable local spool replaces fire-and-forget emission.
+- **Record-only default (ADR-0005)**: Zero-config recording ships first; enforcement (Cedar/Rego sidecar, fail-closed) is a later switch on rules proposed from observed traffic.
+- **Consume identity, never issue it (ADR-0005)**: Agent identity arrives as an assertion (APort passport, Entra Agent ID); TraceReplay validates and records it.
 - **Idempotent ingestion**: Duplicate events detected by event ID hash. Safe to retry.
-- **Lazy replay**: Execution timeline is constructed on-demand from stored events, not pre-computed.
+- **Lazy timeline replay**: The viewing timeline is constructed on-demand from stored events. Distinct from **deterministic re-execution** (the long-term moat), which requires capturing all nondeterministic inputs — model I/O, retrieval results, tool outputs, clock reads, seeds — via Ring 2.
 - **Redaction before persistence**: Sensitive fields are redacted during normalization, before writing to the event store.
-- **MCP as an ingestion path**: The MCP server is a transparent telemetry layer — AI agents use standard MCP tools while every action is captured as auditable events. Best-effort emission ensures tool execution is never blocked by telemetry failures.
+- **MCP as agent-facing API**: The MCP server provides query/approval/artifact APIs to agents. Its parallel capture tools are legacy (see ADR-0005).

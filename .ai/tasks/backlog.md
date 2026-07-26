@@ -1,35 +1,67 @@
 # TraceReplay AI — Backlog
 
-## Priority: CRITICAL (Core Feature — Sprint Core-1)
+## Priority: CRITICAL (Sprint Interception-1 — ADR-0005) ⭐ CORE FEATURE
 
-### OpenTelemetry Native Ingestion ⭐ CORE FEATURE
-- [ ] OTel Collector service in Docker Compose (gRPC :4317, HTTP :4318)
-- [ ] OTLP HTTP receiver endpoint in ingest-api (`POST /v1/traces`)
-- [ ] OTel Span → canonical event adapter (`OTelSpanAdapter` in connectors-core)
-- [ ] GenAI semantic convention full mapping (spans, metrics, events)
-- [ ] VS Code Copilot OTel settings profile and documentation
-- [ ] OTLP metrics endpoint (`POST /v1/metrics`) + run_metrics table
-- [ ] OTel context propagation in MCP server (unified traces)
-- [ ] Integration test: Copilot OTel → ingest → normalize → replay
-- [ ] OTel adapter extensions for Codex/Claude (vendor auto-detection)
+### Decision Ledger (record-only spine)
+- [ ] Decision record event schema (`decision.recorded`, `workspace.snapshot`, `session.attestation`, `capture.gap`)
+- [ ] Write-time hash chaining (`chain_hash` at persistence; evidence-service verifies stored chain)
+- [ ] Configuration attestation (hash settings.json / hooks.json / config.toml at session start)
+- [ ] Explicit gap markers for incomplete capture chains
+- [ ] Durable local event spool (no silent telemetry loss)
 
-### Ollama Post-Processing Pipeline ⭐ CORE FEATURE
-- [ ] Ollama processor service (DeepSeek R1 background enrichment)
-- [ ] Ollama Docker integration (with host fallback)
-- [ ] BullMQ enrichment queue (run-summary, anomaly-check, compliance-scan)
-- [ ] Run summary generation after `run.end` events
-- [ ] Anomaly detection (excessive failures, abnormal token usage, long gaps)
-- [ ] Compliance scanning (sensitive data, unauthorized tool use)
-- [ ] Semantic tagging and event classification
-- [ ] Graceful degradation when Ollama unavailable
+### Ring 3 — Filesystem Ground Truth
+- [ ] Git tree hash snapshots (incl. untracked) at session start + turn boundaries
+- [ ] Diff hashes chained into ledger
+- [ ] (Later) FSEvents/fanotify watcher for sub-turn granularity or out-of-workspace writes
 
-### MCP Server Enhancements
-- [ ] OTel trace context propagation (`traceparent` / `tracestate`)
-- [ ] Unified traces: MCP tool calls + Copilot internal reasoning in one timeline
+### Ring 1 — Native Hooks
+- [ ] Claude Code hook pack (PreToolUse/PostToolUse/PostToolUseFailure/SessionStart/Stop)
+- [ ] Codex hook pack (bash-only) with honest limitation profile
+- [ ] Hook payload adapter in connectors-core
+- [ ] Deprecate parallel file/shell MCP tools (keep agent-facing API tools)
+
+### Ring 2 — Transport Spine (Milestone 6)
+- [ ] ADR-0006: MCP proxy architecture spike
+- [ ] Egress HTTPS proxy spike (model I/O capture feasibility)
+- [ ] MCP proxy build: stdio + Streamable HTTP forwarder, tool discovery passthrough
+- [ ] Egress proxy build: local CA, HTTP(S)_PROXY, Codex `[features.network_proxy]`
+
+### Deterministic Replay (Milestone 7 — the moat)
+- [ ] Nondeterministic input capture: model I/O, retrieval results, tool outputs, clock reads, seeds
+- [ ] Re-execution harness + divergence detection
+- [ ] Evidence packs for compliance/legal buyer
+
+### Enforcement (Milestone 8 — the switch)
+- [ ] Policy gate at Ring 1 (PreToolUse deny) and Ring 2 (proxy block)
+- [ ] Cedar/Rego compilation — no proprietary DSL
+- [ ] Fail-closed local sidecar, sub-ms, no model in hot path
+- [ ] Rule proposals from observed traffic
+- [ ] Identity assertion consumption (APort passport, Entra Agent ID) — never issue
 
 ---
 
-## Priority: High
+## Priority: High (paused Core-1 remainder — OTel + Ollama)
+
+### OpenTelemetry Native Ingestion
+- [x] OTel Collector service in Docker Compose (gRPC :4317, HTTP :4318)
+- [x] OTLP HTTP receiver endpoint in ingest-api (`POST /v1/traces`)
+- [x] OTel Span → canonical event adapter (`OTelSpanAdapter` in connectors-core)
+- [x] VS Code Copilot OTel settings profile and documentation
+- [ ] GenAI semantic convention full mapping (spans, metrics, events)
+- [ ] OTLP metrics endpoint (`POST /v1/metrics`) + run_metrics table
+- [ ] OTel context propagation in MCP server (superseded by Ring 2 design)
+- [ ] Integration test: Copilot OTel → ingest → normalize → replay (carried into Interception-1 Tier 4)
+- [ ] OTel adapter extensions for Codex/Claude (vendor auto-detection)
+
+### Ollama Post-Processing Pipeline
+- [x] Ollama processor service (DeepSeek R1 background enrichment)
+- [ ] Ollama Docker integration (with host fallback)
+- [ ] BullMQ enrichment queue (run-summary, anomaly-check, compliance-scan)
+- [ ] Semantic tagging and event classification
+
+---
+
+## Foundation (complete except noted)
 
 ### Ingestion & Schema
 - [x] Canonical event schema package with full type definitions
@@ -76,7 +108,7 @@
 - [x] Evidence bundle assembly from run data
 - [x] JSON export format
 - [x] PDF summary generation
-- [ ] Evidence integrity hash chain
+- [x] Evidence integrity hash chain (retroactive — moves to write-time chaining in Interception-1)
 - [x] Redaction engine with configurable rules
 
 ---
@@ -92,7 +124,7 @@
 ### Enterprise
 - [ ] Multi-tenant data isolation
 - [ ] RBAC system (viewer, investigator, admin, system)
-- [ ] Policy engine for rule-based evaluation
+- [ ] Policy engine for rule-based evaluation (→ Milestone 8: Cedar/Rego, no proprietary DSL)
 - [ ] Retention policies with auto-purge
 - [ ] SSO / SAML integration
 - [ ] Audit log for platform operations
